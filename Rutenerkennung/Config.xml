@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UFT-8"?>
+<MSER_Config>
+    <Delta>7</Delta>
+    <Min_Area>1200</Min_Area>
+    <Max_Area>7000</Max_Area>
+    <Max_Variation>0.3</Max_Variation>
+    <Min_Diversity>0.9</Min_Diversity>
+    <Max_Evolution>10</Max_Evolution>
+    <Area_Threshold>0.1</Area_Threshold>
+    <Min_Argin>0.003</Min_Argin>
+    <Edge_Blur_Size>5</Edge_Blur_Size>
+</MSER_Config>
