@@ -97,27 +97,69 @@ void MainWindow::on_Parameter_Updated_clicked()
 
     while(1){
         cap >> frame;
-        //cv::resize(frame, frame, size);
+        cv::resize(frame, frame, size);
         keypoints.clear();
+        ticks = clock();
         cvtColor(frame, bw, CV_BGR2GRAY);
+
+        //cv::Mat bw_contrast = Mat::zeros( bw.size(), bw.type() );
+
+        double alpha = 4;
+        int beta = -40;
+
+
+        //bw_contrast = alpha * bw + beta;
+        //uint radius = 10;
+        //Mat element = getStructuringElement( MORPH_ELLIPSE , Size( 2*radius+1, 2*radius+1 ), Point( radius, radius ) );
+
+        //cv::Mat bw_contrast_opened = Mat::zeros( bw.size(), bw.type() );
+
+        /// Apply the specified morphology operation
+        //
+        //morphologyEx( bw_contrast, bw_contrast_opened, MORPH_OPEN, element );
+
 
         std::cout << "Begin Detection" << std::endl;
         //ms( bw, regions ); //, mask );
         Mat bw_invert;
 
-        ticks = clock();
+
         cv::subtract( cv::Scalar::all(255), bw, bw_invert );
         sbd->detect( bw_invert, keypoints );
         std::cout << "Keypoints:" << keypoints.size() << std::endl;
         Mat im_with_keypoints;
 
+        /*
+        Mat dst,kernel;
+        uint kernel_size = 40;
+        uint count = 0;
+        kernel = Mat::zeros( kernel_size, kernel_size, CV_32F );
+        for( int x = 0; x < kernel_size; x++ ){
+            for( int y = 0; y < kernel_size; y++ ){
+                if( (y-20.0)*(y-20.0)+(x-20.0)*(x-20.0) < 15*15 ){
+                    kernel.at<float>(x,y) = 1;
+                    count++;
+                }
+            }
+        }
+        kernel /= (float)count;
+        imshow( "Kernel", kernel );
+
+        /// Apply filter
+        filter2D(bw_contrast, dst, -1 , kernel, Point( -1, -1 ), 0, BORDER_DEFAULT );
+        imshow( "filter2D Demo", dst );
+        */
+
         std::cout << "Calculated in " << (double)(clock() - ticks)/CLOCKS_PER_SEC << " seconds" << std::endl;
 
-        drawKeypoints( bw_invert, keypoints, im_with_keypoints, Scalar(0, 0, 255),  DrawMatchesFlags::DEFAULT);
+        drawKeypoints( bw_invert, keypoints, im_with_keypoints, Scalar(255, 0, 0),  DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
         cv::cvtColor(im_with_keypoints, im_with_keypoints, CV_BGR2RGB);
 
         //ui->label_15->setPixmap(QPixmap::fromImage(QImage(im_with_keypoints.data, im_with_keypoints.cols, im_with_keypoints.rows, im_with_keypoints.step, QImage::Format_RGB888)));
         //ui->label_15->show();
+        imshow( "bw", bw );
+        //imshow( "bw_contrast", bw_contrast );
+        //imshow( "bw_contrast_opened", bw_contrast_opened );
         imshow( "simpleBlobDetector", im_with_keypoints );
         if( cv::waitKey(30) >= 0 ) break;
     }
