@@ -116,7 +116,7 @@ void MainWindow::on_Parameter_Updated_clicked()
 		morphologyEx( binary, binary_opened, MORPH_OPEN, kernel );
 		imshow( "binary_opened", binary_opened );
 
-		// TODO: ALternative checken: watershed(src, markers);
+		// TODO: Alternative checken: watershed(src, markers);
 		// Finding sure foreground area
 		cv::Mat dist_transformed;
 		distanceTransform(binary_opened, dist_transformed, CV_DIST_L2, 3);
