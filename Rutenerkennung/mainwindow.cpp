@@ -96,72 +96,125 @@ void MainWindow::on_Parameter_Updated_clicked()
     cv::Mat frame;
 
     while(1){
-        cap >> frame;
-        cv::resize(frame, frame, size);
-        keypoints.clear();
-        ticks = clock();
-        cvtColor(frame, bw, CV_BGR2GRAY);
 
-        //cv::Mat bw_contrast = Mat::zeros( bw.size(), bw.type() );
+      cap >> frame;
+      //cv::resize(frame, frame, size);
+      keypoints.clear();
+      
+      ticks = clock();
+      cvtColor(frame, bw, CV_BGR2GRAY);
+      
 
-        double alpha = 4;
-        int beta = -40;
+      cv::Mat binary;
+      // TODO: Threshold anpassen
+      threshold( bw, binary, 125, 255, THRESH_BINARY );
+      imshow( "binary", binary );
+
+      // noise removal
+      cv::Mat kernel = Mat::ones( 3, 3, bw.type() );
+      cv::Mat binary_opened;
+		morphologyEx( binary, binary_opened, MORPH_OPEN, kernel );
+		imshow( "binary_opened", binary_opened );
+
+		// TODO: ALternative checken: watershed(src, markers);
+		// Finding sure foreground area
+		cv::Mat dist_transformed;
+		distanceTransform(binary_opened, dist_transformed, CV_DIST_L2, 3);
+		imshow( "dist_transformed", dist_transformed );
+
+		cv::Mat dist_transformat_thres;
+		// TODO: über Maßstab des Bildes den Threshold bestimmen
+		threshold( dist_transformed, dist_transformat_thres, 0.7*dist_transform.max(), 255, CV_THRESH_BINARY );
+		imshow( "dist_transformat_thres", dist_transformat_thres );
+
+		
+		// Detektion über Kontur
+    	vector<vector<Point> > contours;
+    	findContours(dist_transformat_thres, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+
+    	// Mittelpunkt der Kontur bestimmen
+    	vector<Point> pos;
+    	for ( int c = 0; c < contours.size(); c++ ){
+    		Point sum = Point(0,0);
+    		const vector<Point> contour = contours.at(c);
+    		for( int i = 0; i < contour.size(); i++ ){
+    			sum += contour.at(i);
+    		}
+    		sum /= contour.size();
+    		circle(bw, sum, 5, CV_RGB(255,0,0), -1);
+    		pos.push_back(sum);
+    	}
+    	imshow( "bw", bw );
+		/*
+    	// Marker für Watershed vorbereiten
+    	Mat markers = Mat::zeros(dist.size(), CV_32SC1);
+    	// Draw the foreground markers
+    	for (size_t i = 0; i < contours.size(); i++)
+      	drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i)+1), -1);
+     	// Draw the background marker
+    	circle(markers, Point(5,5), 3, CV_RGB(255,255,255), -1);
+		imshow("Markers", markers*10000);
+
+		
+		// Watershed zum Auffüllen
+    	watershed(frame, markers);
+    	Mat mark = Mat::zeros(markers.size(), CV_8UC1);
+    	markers.convertTo(mark, CV_8UC1);
+    	bitwise_not(mark, mark);
+		//    imshow("Markers_v2", mark); // uncomment this if you want to see how the mark
+                                  // image looks like at that point
+    	// Generate random colors
+    	vector<Vec3b> colors;
+    	for (size_t i = 0; i < contours.size(); i++)
+    	{
+      	int b = theRNG().uniform(0, 255);
+        	int g = theRNG().uniform(0, 255);
+        	int r = theRNG().uniform(0, 255);
+        	colors.push_back(Vec3b((uchar)b, (uchar)g, (uchar)r));
+    	}
+    	// Create the result image
+    	Mat dst = Mat::zeros(markers.size(), CV_8UC3);
+    	// Fill labeled objects with random colors
+    	for (int i = 0; i < markers.rows; i++)
+    	{
+        	for (int j = 0; j < markers.cols; j++)
+        	{
+            int index = markers.at<int>(i,j);
+            if (index > 0 && index <= static_cast<int>(contours.size()))
+                dst.at<Vec3b>(i,j) = colors[index-1];
+            else
+                dst.at<Vec3b>(i,j) = Vec3b(0,0,0);
+        	}
+    	}
+    	// Visualize the final image
+    	imshow("Final Result", dst);
+		*/
+
+		
+
+		/*
+		Detektion über SimpleBlobDetection
+      std::cout << "Begin Detection" << std::endl;
+      Mat bw_invert;
+		cv::subtract( cv::Scalar::all(255), dist_transformat_thres, bw_invert );
+      
+      sbd->detect( bw_invert, keypoints );
+      std::cout << "Keypoints:" << keypoints.size() << std::endl;
+      Mat im_with_keypoints;
 
 
-        //bw_contrast = alpha * bw + beta;
-        //uint radius = 10;
-        //Mat element = getStructuringElement( MORPH_ELLIPSE , Size( 2*radius+1, 2*radius+1 ), Point( radius, radius ) );
+      std::cout << "Calculated in " << (double)(clock() - ticks)/CLOCKS_PER_SEC << " seconds" << std::endl;
 
-        //cv::Mat bw_contrast_opened = Mat::zeros( bw.size(), bw.type() );
-
-        /// Apply the specified morphology operation
-        //
-        //morphologyEx( bw_contrast, bw_contrast_opened, MORPH_OPEN, element );
-
-
-        std::cout << "Begin Detection" << std::endl;
-        //ms( bw, regions ); //, mask );
-        Mat bw_invert;
-
-
-        cv::subtract( cv::Scalar::all(255), bw, bw_invert );
-        sbd->detect( bw_invert, keypoints );
-        std::cout << "Keypoints:" << keypoints.size() << std::endl;
-        Mat im_with_keypoints;
-
-        /*
-        Mat dst,kernel;
-        uint kernel_size = 40;
-        uint count = 0;
-        kernel = Mat::zeros( kernel_size, kernel_size, CV_32F );
-        for( int x = 0; x < kernel_size; x++ ){
-            for( int y = 0; y < kernel_size; y++ ){
-                if( (y-20.0)*(y-20.0)+(x-20.0)*(x-20.0) < 15*15 ){
-                    kernel.at<float>(x,y) = 1;
-                    count++;
-                }
-            }
-        }
-        kernel /= (float)count;
-        imshow( "Kernel", kernel );
-
-        /// Apply filter
-        filter2D(bw_contrast, dst, -1 , kernel, Point( -1, -1 ), 0, BORDER_DEFAULT );
-        imshow( "filter2D Demo", dst );
-        */
-
-        std::cout << "Calculated in " << (double)(clock() - ticks)/CLOCKS_PER_SEC << " seconds" << std::endl;
-
-        drawKeypoints( bw_invert, keypoints, im_with_keypoints, Scalar(255, 0, 0),  DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-        cv::cvtColor(im_with_keypoints, im_with_keypoints, CV_BGR2RGB);
-
-        //ui->label_15->setPixmap(QPixmap::fromImage(QImage(im_with_keypoints.data, im_with_keypoints.cols, im_with_keypoints.rows, im_with_keypoints.step, QImage::Format_RGB888)));
-        //ui->label_15->show();
-        imshow( "bw", bw );
-        //imshow( "bw_contrast", bw_contrast );
-        //imshow( "bw_contrast_opened", bw_contrast_opened );
-        imshow( "simpleBlobDetector", im_with_keypoints );
-        if( cv::waitKey(30) >= 0 ) break;
+      drawKeypoints( bw_invert, keypoints, im_with_keypoints, Scalar(255, 0, 0),  DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+      cv::cvtColor(im_with_keypoints, im_with_keypoints, CV_BGR2RGB);
+		*/
+      //ui->label_15->setPixmap(QPixmap::fromImage(QImage(im_with_keypoints.data, im_with_keypoints.cols, im_with_keypoints.rows, im_with_keypoints.step, QImage::Format_RGB888)));
+      //ui->label_15->show();
+      
+      //imshow( "bw_contrast", bw_contrast );
+      //imshow( "bw_contrast_opened", bw_contrast_opened );
+      //imshow( "simpleBlobDetector", im_with_keypoints );
+      if( cv::waitKey(30) >= 0 ) break;
     }
 
     delete sbd;
