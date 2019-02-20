@@ -70,6 +70,47 @@ void MainWindow::update_Parameters(cv::SimpleBlobDetector::Params* params){
 
 }
 
+/*
+static void onMouse( int event, int x, int y, int flag , void* userData ){
+	if( event != EVENT_LBUTTONUP ) return;
+	Mat* frame = (Mat*) param;
+	// Male einen Kreis, damit wird sicher sind.
+	circle(frame, Point(x,y), 10, 255, 1, 8, 0);
+	imshow( "Einmessung Koordinatensystem_", frame );
+}
+
+// Das Einmessen der Koordinatensysteme (K-Kinematik, B-Bild) wird
+// durch eine Vorlage realisiert, die an die entsprechende Stelle im Blick-
+// feld der Kamera angebracht wrid. Über erkennbare Symbole, die im 
+// K-Koordinatensystem definiert wurden, kann die Transformation B->K
+// berechnet werden.
+void MainWindow::on_Einmessung_Koordinatensystem(){
+	namedWindow("Einmessung Koordinatensystem", WINDOW_NORMAL);
+	// evtl. über Bild laden?
+	cv::VideoCapture cap(0);
+   if( !cap.isOpened() ){
+      std::cout << "VideoCapture konnte nicht geoeffnet werden." << std::endl;
+      return;
+   }
+
+	Mat frame;
+
+	// Mouse-Callback setzen, um die Symbole auf dem Bild auszuwählen
+	void setMouseCallback("Einmessung Koordinatensystem", onMouse, &frame )
+
+   
+   while( true ){
+   	cap >> frame;
+   	imshow( "Einmessung Koordinatensystem", frame );
+
+   	//usleep( 1 );
+   	if( cv::waitKey(30) >= 0 ) break;
+   }
+	destroyWindow("Einmessung Koordinatensystem");	
+	cap.release();
+}
+*/
+
 void MainWindow::on_Parameter_Updated_clicked()
 {
 
@@ -214,7 +255,7 @@ void MainWindow::on_Parameter_Updated_clicked()
       //imshow( "bw_contrast", bw_contrast );
       //imshow( "bw_contrast_opened", bw_contrast_opened );
       //imshow( "simpleBlobDetector", im_with_keypoints );
-      if( cv::waitKey(30) >= 0 ) break;
+      if( cv::waitKey(1) >= 0 ) break;
     }
 
     delete sbd;
