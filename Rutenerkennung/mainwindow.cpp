@@ -9,36 +9,99 @@
 
 clock_t ticks;
 
+// Liste von Punkten, jeweils im realen (Kinematik-) und virtuellen (Kamera/Bild-)Koordinatensystem
+vector<Vec2i> B_Points;
+vector<Vec2f> K_Points;
+
+Mat R_B_T = cv::Mat(2, 3, CV_32F);
+
 using namespace cv;
 
-MainWindow::MainWindow(struct SBD_Config *SBD_config, QWidget *parent) :
+MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow), SBD_config(SBD_config)
+    ui(new Ui::MainWindow), SBD_config(SBD_config), m_xml_doc(xml_doc)
 {    
     ui->setupUi(this);
     //ui->Input_Delta         ->setValue( MSER_config->delta          );
-    SBD_config->filterByArea = ui->cB_filterByArea->isChecked();
-    SBD_config->filterByCircularity = ui->cB_filterByCircularity->isChecked();
-    SBD_config->filterByConvexity = ui->cB_filterByConvexity->isChecked();
-    SBD_config->filterByInertia = ui->cB_filterByInertia->isChecked();
+	SBD_config->filterByArea = ui->cB_filterByArea->isChecked();
+	SBD_config->filterByCircularity = ui->cB_filterByCircularity->isChecked();
+	SBD_config->filterByConvexity = ui->cB_filterByConvexity->isChecked();
+	SBD_config->filterByInertia = ui->cB_filterByInertia->isChecked();
 
-    SBD_config->maxArea = ui->dSB_maxArea->value();
-    SBD_config->maxCircularity = ui->dSB_maxCircularity->value();
-    SBD_config->maxConvexity = ui->dSB_maxConvexity->value();
-    SBD_config->maxInertiaRatio = ui->dSB_maxInertia->value();
-    SBD_config->maxThreshold = ui->dSB_maxThreshold->value();
+	SBD_config->maxArea = ui->dSB_maxArea->value();
+	SBD_config->maxCircularity = ui->dSB_maxCircularity->value();
+	SBD_config->maxConvexity = ui->dSB_maxConvexity->value();
+	SBD_config->maxInertiaRatio = ui->dSB_maxInertia->value();
+	SBD_config->maxThreshold = ui->dSB_maxThreshold->value();
 
-    SBD_config->minArea = ui->dSB_minArea->value();
-    SBD_config->minCircularity = ui->dSB_minCircularity->value();
-    SBD_config->minConvexity = ui->dSB_minConvexity->value();
-    SBD_config->minDistBetweenBlobs = ui->dSB_minDistance->value();
-    SBD_config->minInertiaRatio = ui->dSB_minInertia->value();
-    SBD_config->minRepeatability = ui->dSB_minRepeatability->value();
-    SBD_config->minThreshold = ui->dSB_minThreshold->value();
+	SBD_config->minArea = ui->dSB_minArea->value();
+	SBD_config->minCircularity = ui->dSB_minCircularity->value();
+	SBD_config->minConvexity = ui->dSB_minConvexity->value();
+	SBD_config->minDistBetweenBlobs = ui->dSB_minDistance->value();
+	SBD_config->minInertiaRatio = ui->dSB_minInertia->value();
+	SBD_config->minRepeatability = ui->dSB_minRepeatability->value();
+	SBD_config->minThreshold = ui->dSB_minThreshold->value();
 
-    SBD_config->thresholdStep = ui->dSB_thresholdStep->value();
+	SBD_config->thresholdStep = ui->dSB_thresholdStep->value();
 
+    // K_Points aus XML einlesen
+	QDomElement docElem = m_xml_doc.documentElement(); 	// Rutenerkennung
+	QString rootTag = docElem.tagName();
+	qInfo() << rootTag;
 
+	QDomNodeList nodeList = docElem.elementsByTagName("Camera"); 
+	if( !nodeList.isempty() ){
+		QDomElement cam_element = nodeList.at(0).toElement();
+		qInfo() << "\t" << cam_element.tagName();
+		nodeList = cam_element.elementsByTagName("Calibration"); 
+		if( !nodeList.isempty() ){
+			QDomElement calib_element = nodeList.at(0).toElement();
+			qInfo() << "\t\t" << calib_element.tagName();
+			nodeList = calib_element.elementsByTagName("Point");
+			for(int ii = 0;ii < nodeList.count(); ii++){
+				Vec2f vec;
+				QDomElement point = nodeList.at(ii).toElement();
+				qInfo() << "\t\t\tRead Point " << point.attribute("id").toInt();
+
+				vec[0] = point.elementsByTagName("x").at(0).toElement().text().toFloat();
+				vec[1] = point.elementsByTagName("y").at(0).toElement().text().toFloat();
+
+				qInfo() << "\t\t\tX:" << vec[0];
+				qInfo() << "\t\t\tY:" << vec[1];
+
+				K_Points.push_back(vec);
+			}
+		}
+		// Parsen von R_B_R in R_B_T
+		nodeList = cam_element.elementsByTagName("Rotation");
+		if( !nodeList.isempty() ){
+			QDomElement rotation_element = nodeList.at(0).toElement();
+			qInfo() << "\t\t" << rotation_element.tagName();
+			nodeList = rotation_element.elementsByTagName("r");
+			for(int ii = 0;ii < nodeList.count(); ii++){
+				QDomElement mat = nodeList.at(ii).toElement();
+				char mat_entry[3] = mat.attribute("id").toLocal8Bit().data();
+				qInfo() << "\t\t\tRead Mat_Entry " << mat.attribute("id");
+				R_B_T.at<float>(mat_entry[0]-'1',mat_entry[1]-'1') = mat.text().toFloat();
+			}
+		}
+
+		// Parsen von R_B_Org in R_B_T
+		nodeList = cam_element.elementsByTagName("Translation");
+		if( !nodeList.isempty() ){
+			QDomElement trans_element = nodeList.at(0).toElement();
+			qInfo() << "\t" << trans_element.tagName();
+			if( !nodeList.isempty() ){
+				QDomElement calib_element = nodeList.at(0).toElement();
+				qInfo() << "\t\t" << calib_element.tagName();
+				nodeList = calib_element.elementsByTagName("Point");
+				QDomElement point = nodeList.at(ii).toElement();
+				R_B_T.at<float>(0,2) = point.elementsByTagName("x").at(0).toElement().text().toFloat();
+				R_B_T.at<float>(1,2) = point.elementsByTagName("y").at(0).toElement().text().toFloat();
+			}
+		}
+	}
+	cout << R_B_T << endl;
 }
 
 MainWindow::~MainWindow()
@@ -67,7 +130,6 @@ void MainWindow::update_Parameters(cv::SimpleBlobDetector::Params* params){
     params->minThreshold = SBD_config->minThreshold;
 
     params->thresholdStep = SBD_config->thresholdStep;
-
 }
 
 /*
@@ -75,10 +137,11 @@ evtl. können wir das Einlesen der Koordinatensysteme auch "manuell" machen. Daz
 erzeugen wir uns ein Bild aus der Kamera (wenn sie an ihrer finalen Position angebracht wurde)
 und lesen es am PC ein. Nachteil ist, dass wir dann vor Ort keine Änderungen übernehmen
 können 
+*/
 
-// Liste von Punkten, jeweils im realen (Kinematik-) und virtuellen (Kamera/Bild-)Koordinatensystem
-vector<Vec2i> B_Points;
-vector<Vec2f> K_Points;
+
+// TODO: wie werden die K_Points eingelesen?
+// Über XML?
 
 
 static void onMouse( int event, int x, int y, int flag , void* param ){
@@ -119,7 +182,7 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
 	Mat frame;
 
 	// Mouse-Callback setzen, um die Symbole auf dem Bild auszuwählen
-	void setMouseCallback("Einmessung Koordinatensystem", onMouse, &frame )
+	setMouseCallback("Einmessung Koordinatensystem", onMouse, &frame );
 
    
    while( true ){
@@ -137,12 +200,40 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
    	if( cv::waitKey(1) >= 0 ) break;
    }
 
-	// TODO: Berechne Transformation
+	// Berechne Transformation
+	if( B_Points.size() < 3 || B_Points.size() > K_Points.size() ){
+		qInfo() << "Achtung: Diskrepanz bei Anzahl der Punkte waehrend der Einmessung des Koordinatensystems";
+		goto quit;
+	}
 
+	uint size_points = B_Points.size();
+
+	// D: Data, R: real (K-Koordinaten), B: Bild (B-Koordinaten)
+	Mat R_D = Mat::ones( 2, size_points, CV_32F );
+	Mat B_D = Mat::ones( 3, size_points, CV_32F );
+
+	// Fill Mats
+	for (uint i = 0; i < size_points; i++){
+		B_D.at<float>(0,i) = (float)B_Points.at(i)[0];
+		B_D.at<float>(1,i) = (float)B_Points.at(i)[1];
+
+		R_D.at<float>(0,i) = R_Points.at(i)[0];
+		R_D.at<float>(1,i) = R_Points.at(i)[1];
+	}
+
+	qInfo() << R_D;
+	qInfo() << B_D;
+
+	Mat temp = B_D * B_D.t();
+	R_D * B_D.t() * temp.inv();
+
+	cout << R_B_T << endl;
+
+quit:
 	destroyWindow("Einmessung Koordinatensystem");	
 	cap.release();
 }
-*/
+
 
 void MainWindow::on_Parameter_Updated_clicked()
 {

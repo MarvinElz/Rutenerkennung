@@ -65,6 +65,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     struct SBD_Config *SBD_config;
+    QDomDocument *m_xml_doc;
     void update_Parameters(cv::SimpleBlobDetector::Params*);
 };
 
