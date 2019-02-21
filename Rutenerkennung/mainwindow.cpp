@@ -71,12 +71,35 @@ void MainWindow::update_Parameters(cv::SimpleBlobDetector::Params* params){
 }
 
 /*
-static void onMouse( int event, int x, int y, int flag , void* userData ){
-	if( event != EVENT_LBUTTONUP ) return;
-	Mat* frame = (Mat*) param;
-	// Male einen Kreis, damit wird sicher sind.
-	circle(frame, Point(x,y), 10, 255, 1, 8, 0);
-	imshow( "Einmessung Koordinatensystem_", frame );
+evtl. können wir das Einlesen der Koordinatensysteme auch "manuell" machen. Dazu
+erzeugen wir uns ein Bild aus der Kamera (wenn sie an ihrer finalen Position angebracht wurde)
+und lesen es am PC ein. Nachteil ist, dass wir dann vor Ort keine Änderungen übernehmen
+können 
+
+// Liste von Punkten, jeweils im realen (Kinematik-) und virtuellen (Kamera/Bild-)Koordinatensystem
+vector<Vec2i> B_Points;
+vector<Vec2f> K_Points;
+
+
+static void onMouse( int event, int x, int y, int flag , void* param ){
+	Vec2i pos = Vec2i(x,y);
+	switch (event){
+	case EVENT_LBUTTONUP:
+		//Mat* frame = (Mat*) param;
+		B_Points.push_back( pos );
+		break;
+	case EVENT_RBUTTONUP:
+		if( !B_Points.empty() ){
+			for (std::vector<Vec2i>::iterator it = B_Points.begin() ; it != B_Points.end(); ++it){
+				if( norm( pos - *it ) < 10 ){
+					// Wenn rechte Maustaste gedrückt, Punkt löschen
+					it = B_Points.erase(it);
+					return;			
+				}
+			}
+		}
+		break;	
+	}
 }
 
 // Das Einmessen der Koordinatensysteme (K-Kinematik, B-Bild) wird
@@ -101,11 +124,21 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
    
    while( true ){
    	cap >> frame;
+
+		if( !B_Points.empty() ){
+			for (std::vector<Vec2i>::iterator it = B_Points.begin() ; it != B_Points.end(); ++it){
+				// Zeichne einen Kreis, damit wird sicher sind.
+				circle(frame, Point( *it[0],*it[1] ), 10, 255, 1, 8, 0);
+			}
+		}
    	imshow( "Einmessung Koordinatensystem", frame );
 
    	//usleep( 1 );
-   	if( cv::waitKey(30) >= 0 ) break;
+   	if( cv::waitKey(1) >= 0 ) break;
    }
+
+	// TODO: Berechne Transformation
+
 	destroyWindow("Einmessung Koordinatensystem");	
 	cap.release();
 }
