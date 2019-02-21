@@ -3,6 +3,7 @@
 #include <iostream>
 #include <QDebug>
 
+#include <math.h>
 
 #include <vector>
 
@@ -24,14 +25,18 @@ clock_t ticks;
 vector<Vec2i> B_Points;
 vector<Vec2f> K_Points;
 
+
 // Rotationsmatrix von B nach R
+// Enthält den Maßstab
 Mat R_B_R = Mat::zeros(2, 2, CV_32F);
 
 // Translationsvektor von Ursprung (Org = Origin) K-System nach B-System dargestellt im
 // K-System
 Mat RpB_Org = Mat::zeros(2,1,CV_32F);
 
-
+// Maßstab B->K
+// 0.1 mm/px
+float masstab = 0.1;
 
 using namespace cv;
 
@@ -71,6 +76,7 @@ MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWi
 	if( !nodeList.isempty() ){
 		QDomElement cam_element = nodeList.at(0).toElement();
 		qInfo() << "\t" << cam_element.tagName();
+		
 		nodeList = cam_element.elementsByTagName("Calibration"); 
 		if( !nodeList.isempty() ){
 			QDomElement calib_element = nodeList.at(0).toElement();
@@ -90,7 +96,7 @@ MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWi
 				K_Points.push_back(vec);
 			}
 		}
-
+		
 		// Parsen von R_B_R
 		nodeList = cam_element.elementsByTagName("Rotation");
 		if( !nodeList.isempty() ){
@@ -165,6 +171,10 @@ static void onMouse( int event, int x, int y, int flag , void* param ){
 	case EVENT_LBUTTONUP:
 		//Mat* frame = (Mat*) param;
 		B_Points.push_back( pos );
+
+		// falls die K-Punkte nicht über die XML eingeladen werden,
+		// hier die Koordinaten über QInputDialog abfragen
+
 		break;
 	case EVENT_RBUTTONUP:
 		if( !B_Points.empty() ){
@@ -204,9 +214,12 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
    	cap >> frame;
 
 		if( !B_Points.empty() ){
-			for (std::vector<Vec2i>::iterator it = B_Points.begin() ; it != B_Points.end(); ++it){
+			for (for uint i = 0; i < B_Points.size(); i++){
 				// Zeichne einen Kreis, damit wird sicher sind.
-				circle(frame, Point( *it[0],*it[1] ), 10, 255, 1, 8, 0);
+				Point p = B_Points.at(i);
+				uint radius = 3;
+				circle(frame , p, radius, CV_RGB(255,0,0), 1, 8, 0);
+				putText(frame, std::to_string(i) , p + Point(radius+2,radius+2) , FONT_HERSHEY_SIMPLEX, 1, CV_RGB(255,0,0) );
 			}
 		}
    	imshow( "Einmessung Koordinatensystem", frame );
@@ -239,14 +252,20 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
 	cout << "R_D:" << R_D << endl;
 	cout << "B_D:" << B_D << endl;
 
-	Mat temp = B_D * B_D.t();
+	Mat temp =  B_D * B_D.t();
 	Mat R_B_T = R_D * B_D.t() * temp.inv();
 
 	cout << "R_B_T:" << R_B_T << endl;
 
-	// TODO: R_B_T aufteilen in Mat R_B_R und Mat RpB_Org
+	// R_B_T aufteilen in Mat R_B_R und Mat RpB_Org
 	R_B_R   = R_B_T(cv::Rect(0,0,2,2)).clone();
 	cout << "R_B_R:" << R_B_R << endl;
+
+	float masstabx = norm( R_B_R(cv::Rect(0,0,1,2)) , Mat::zeros(2,1), NORM_L2 );
+	float masstaby = norm( R_B_R(cv::Rect(0,1,1,2)) , Mat::zeros(2,1), NORM_L2 );
+	masstab = (masstabx + masstaby)/2;
+	cout << "Masstab: " << masstab;
+
 	RpB_Org = R_B_T(cv::Rect(0,2,1,2)).clone();
 	cout << "RpB_Org:" << RpB_Org << endl;
 
@@ -309,8 +328,11 @@ void MainWindow::on_Parameter_Updated_clicked()
 		imshow( "dist_transformed", dist_transformed );
 
 		cv::Mat dist_transformat_thres;
-		// TODO: über Maßstab des Bildes den Threshold bestimmen
-		threshold( dist_transformed, dist_transformat_thres, 0.7*dist_transform.max(), 255, CV_THRESH_BINARY );
+		// TODO: Min aus XML einlesen
+		float Min = 8;	// Durchmesser in mm
+		// Alles, was unterhalb von dem halben Durchmesser ist, fliegt raus
+		threshold( dist_transformed, dist_transformat_thres, static_cast<uint>(Min/masstab/2.0), 255, CV_THRESH_BINARY );
+		//threshold( dist_transformed, dist_transformat_thres, 0.7*dist_transform.max(), 255, CV_THRESH_BINARY );
 		imshow( "dist_transformat_thres", dist_transformat_thres );
 
 		
@@ -321,14 +343,21 @@ void MainWindow::on_Parameter_Updated_clicked()
     	// Mittelpunkt der Kontur bestimmen
     	vector<Point> pos;
     	for ( int c = 0; c < contours.size(); c++ ){
-    		Point sum = Point(0,0);
+    		Point center = Point(0,0);
     		const vector<Point> contour = contours.at(c);
     		for( int i = 0; i < contour.size(); i++ ){
-    			sum += contour.at(i);
+    			center += contour.at(i);
     		}
-    		sum /= contour.size();
-    		circle(bw, sum, 5, CV_RGB(255,0,0), -1);
-    		pos.push_back(sum);
+    		center /= contour.size();
+
+    		// TODO: Max aus XML auslesen
+			float Max = 60;	// Durchmesser in mm
+    		// hier Größe berechnen und entsprechend Filtern
+    		double area = contourArea( contour );
+    		if ( area/M_PI < (Max/masstab/2)*(Max/masstab/2) ){
+	    		circle(bw, center, 5, CV_RGB(255,0,0), -1);
+   	 		pos.push_back(center);
+   	 	}
     	}
     	imshow( "bw", bw );
 		/*

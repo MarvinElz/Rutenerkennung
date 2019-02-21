@@ -23,7 +23,7 @@ temp = ones(3,4);
 temp(1:2, 1:4) = [Bp1, Bp2, Bp3, Bp4]
 erg = [Rp1, Rp2, Rp3, Rp4] * temp'*inv(temp*temp')
 
-A = erg(1:2, 1:2);  % Rotationsmatrix von B nach R
+R_B_R = erg(1:2, 1:2)  % Rotationsmatrix von B nach R
 RpB_Org_sim = erg(1:2,3)
 
 BpR_Org_sim = inv( A ) * -RpB_Org

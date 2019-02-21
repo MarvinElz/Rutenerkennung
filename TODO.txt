@@ -1,2 +1,12 @@
-Implementierung vom Einlesen der Koordinatensyteme
+Implementierung vom Einlesen der Koordinatensyteme - DONE
 
+Testen Einlesen
+
+andere Struktur des Programms?
+
+Ausgabe über Serielle Schnittstelle (boost Bibliothek?)
+
+Algorithmus finden, der Bearbeitungsreihenfolge festlegt
+vielleicht über Kalmen-Filter, der die Plausibilität der Position schätzt?
+
+Test und Einstellung von Parametern (evtl. in xml auslagern)

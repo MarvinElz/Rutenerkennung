@@ -1,60 +1,70 @@
 <?xml version="1.0" encoding="UFT-8"?>
 <Rutenerkennung>
-<MSER_Config>
-    <Delta>7</Delta>
-    <Min_Area>1200</Min_Area>
-    <Max_Area>7000</Max_Area>
-    <Max_Variation>0.3</Max_Variation>
-    <Min_Diversity>0.9</Min_Diversity>
-    <Max_Evolution>10</Max_Evolution>
-    <Area_Threshold>0.1</Area_Threshold>
-    <Min_Argin>0.003</Min_Argin>
-    <Edge_Blur_Size>5</Edge_Blur_Size>
-</MSER_Config>
+	<MSER_Config>
+		<Delta>7</Delta>
+		<Min_Area>1200</Min_Area>
+		<Max_Area>7000</Max_Area>
+		<Max_Variation>0.3</Max_Variation>
+		<Min_Diversity>0.9</Min_Diversity>
+		<Max_Evolution>10</Max_Evolution>
+		<Area_Threshold>0.1</Area_Threshold>
+		<Min_Argin>0.003</Min_Argin>
+		<Edge_Blur_Size>5</Edge_Blur_Size>
+	</MSER_Config>
 
-<!-- Simple Blob Detection -->
-<SBT_Config>
-</SBT_Config>
+	<!-- Simple Blob Detection -->
+	<SBT_Config>
+	</SBT_Config>
 
-<Camera>
-	<!-- Punkte zur Einmessung der Koordinatensysteme -->
-	<Calibration>
-		<Point id="1">
-			<x>1.05</x>
-			<y>1.05</y>
-		</Point>
-		<Point id="2">
-			<x>1.05</x>
-			<y>1.05</y>
-		</Point>
-		<Point id="3">
-			<x>1.05</x>
-			<y>1.05</y>
-		</Point>
-		<Point id="4">
-			<x>1.05</x>
-			<y>1.05</y>
-		</Point>
-		<Point id="5">
-			<x>1.05</x>
-			<y>1.05</y>
-		</Point>
-	</Calibration>
+	<Stecklinge>
+		<Groesse>
+			<!-- DURCHMESSER IN MM -->
+			<Min>8.0</Min>
+			<Max>60.0</Max>
+		</Groesse>		
+	</Stecklinge>
 
-	<Rotation>
-		<r id="11">-0.1</r>
-		<r id="12"> 0.0</r>
-		<r id="21">-0.1</r>
-		<r id="22"> 0.0</r>
-	</Rotation>	
+
+
+	<Camera>
+		<!-- Punkte zur Einmessung der Koordinatensysteme -->
+		<Calibration>
+			<Point id="1">
+				<x>1.05</x>
+				<y>1.05</y>
+			</Point>
+			<Point id="2">
+				<x>1.05</x>
+				<y>1.05</y>
+			</Point>
+			<Point id="3">
+				<x>1.05</x>
+				<y>1.05</y>
+			</Point>
+			<Point id="4">
+				<x>1.05</x>
+				<y>1.05</y>
+			</Point>
+			<Point id="5">
+				<x>1.05</x>
+				<y>1.05</y>
+			</Point>
+		</Calibration>
+
+		<Rotation>
+			<!-- Maßstab: 0.1mm/px --> 
+			<r id="11">-0.1</r>
+			<r id="12"> 0.0</r>
+			<r id="21">-0.1</r>
+			<r id="22"> 0.0</r>
+		</Rotation>	
 	
-	<Translation>
-		<Point>
-			<x>1.05</x>
-			<y>1.05</y>
-		</Point>
-	</Translation>	
-
-</Camera>
+		<Translation>
+			<Point>
+				<x>1.05</x>
+				<y>1.05</y>
+			</Point>
+		</Translation>	
+	</Camera>
 
 </Rutenerkennung>
