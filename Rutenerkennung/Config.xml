@@ -55,8 +55,8 @@
 			<!-- Maßstab: 0.1mm/px --> 
 			<r id="11">-0.1</r>
 			<r id="12"> 0.0</r>
-			<r id="21">-0.1</r>
-			<r id="22"> 0.0</r>
+                        <r id="21"> 0.0</r>
+                        <r id="22">-0.1</r>
 		</Rotation>	
 	
 		<Translation>

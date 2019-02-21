@@ -4,6 +4,7 @@
 #include <QDebug>
 
 #include <math.h>
+#include <QtXml/QtXml>
 
 #include <vector>
 
@@ -38,6 +39,7 @@ Mat RpB_Org = Mat::zeros(2,1,CV_32F);
 // 0.1 mm/px
 float masstab = 0.1;
 
+using namespace std;
 using namespace cv;
 
 MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWidget *parent) :
@@ -68,17 +70,17 @@ MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWi
 	SBD_config->thresholdStep = ui->dSB_thresholdStep->value();
 
     // K_Points aus XML einlesen
-	QDomElement docElem = m_xml_doc.documentElement(); 	// Rutenerkennung
+    QDomElement docElem = m_xml_doc->documentElement(); 	// Rutenerkennung
 	QString rootTag = docElem.tagName();
 	qInfo() << rootTag;
 
 	QDomNodeList nodeList = docElem.elementsByTagName("Camera"); 
-	if( !nodeList.isempty() ){
+    if( !nodeList.isEmpty() ){
 		QDomElement cam_element = nodeList.at(0).toElement();
 		qInfo() << "\t" << cam_element.tagName();
 		
 		nodeList = cam_element.elementsByTagName("Calibration"); 
-		if( !nodeList.isempty() ){
+        if( !nodeList.isEmpty() ){
 			QDomElement calib_element = nodeList.at(0).toElement();
 			qInfo() << "\t\t" << calib_element.tagName();
 			nodeList = calib_element.elementsByTagName("Point");
@@ -99,35 +101,37 @@ MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWi
 		
 		// Parsen von R_B_R
 		nodeList = cam_element.elementsByTagName("Rotation");
-		if( !nodeList.isempty() ){
+        if( !nodeList.isEmpty() ){
 			QDomElement rotation_element = nodeList.at(0).toElement();
 			qInfo() << "\t\t" << rotation_element.tagName();
 			nodeList = rotation_element.elementsByTagName("r");
 			for(int ii = 0;ii < nodeList.count(); ii++){
 				QDomElement mat = nodeList.at(ii).toElement();
-				char mat_entry[3] = mat.attribute("id").toLocal8Bit().data();
+                char *mat_entry = mat.attribute("id").toLocal8Bit().data();
 				qInfo() << "\t\t\tRead Mat_Entry " << mat.attribute("id");
 				R_B_R.at<float>(mat_entry[0]-'1',mat_entry[1]-'1') = mat.text().toFloat();
 			}
 		}
-		cout << "R_B_R" << R_B_R << endl;
+        cout << "R_B_R" << endl;
+        cout << R_B_R << endl;
 
 		// Parsen von R_B_Org in R_B_T
 		nodeList = cam_element.elementsByTagName("Translation");
-		if( !nodeList.isempty() ){
+        if( !nodeList.isEmpty() ){
 			QDomElement trans_element = nodeList.at(0).toElement();
 			qInfo() << "\t" << trans_element.tagName();
-			if( !nodeList.isempty() ){
+            if( !nodeList.isEmpty() ){
 				QDomElement calib_element = nodeList.at(0).toElement();
 				qInfo() << "\t\t" << calib_element.tagName();
 				nodeList = calib_element.elementsByTagName("Point");
-				QDomElement point = nodeList.at(ii).toElement();
+                QDomElement point = nodeList.at(0).toElement();
 				RpB_Org.at<float>(0,0) = point.elementsByTagName("x").at(0).toElement().text().toFloat();
 				RpB_Org.at<float>(1,0) = point.elementsByTagName("y").at(0).toElement().text().toFloat();
 			}
 		}
 	}
-	cout << "RpB_Org" << RpB_Org << endl;
+    cout << "RpB_Org" << endl;
+    cout << RpB_Org << endl;
 }
 
 MainWindow::~MainWindow()
@@ -190,6 +194,7 @@ static void onMouse( int event, int x, int y, int flag , void* param ){
 	}
 }
 
+/*
 // Das Einmessen der Koordinatensysteme (K-Kinematik, B-Bild) wird
 // durch eine Vorlage realisiert, die an die entsprechende Stelle im Blick-
 // feld der Kamera angebracht wrid. Über erkennbare Symbole, die im 
@@ -249,17 +254,21 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
 		R_D.at<float>(1,i) = R_Points.at(i)[1];
 	}
 
-	cout << "R_D:" << R_D << endl;
-	cout << "B_D:" << B_D << endl;
+    cout << "R_D" << endl;
+    cout << R_D << endl;
+    cout << "B_D" << endl;
+    cout << B_D << endl;
 
 	Mat temp =  B_D * B_D.t();
 	Mat R_B_T = R_D * B_D.t() * temp.inv();
 
-	cout << "R_B_T:" << R_B_T << endl;
+    cout << "R_B_T" << endl;
+    cout << R_B_T << endl;
 
 	// R_B_T aufteilen in Mat R_B_R und Mat RpB_Org
 	R_B_R   = R_B_T(cv::Rect(0,0,2,2)).clone();
-	cout << "R_B_R:" << R_B_R << endl;
+    cout << "R_B_R" << endl;
+    cout << R_B_R << endl;
 
 	float masstabx = norm( R_B_R(cv::Rect(0,0,1,2)) , Mat::zeros(2,1), NORM_L2 );
 	float masstaby = norm( R_B_R(cv::Rect(0,1,1,2)) , Mat::zeros(2,1), NORM_L2 );
@@ -267,13 +276,14 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
 	cout << "Masstab: " << masstab;
 
 	RpB_Org = R_B_T(cv::Rect(0,2,1,2)).clone();
-	cout << "RpB_Org:" << RpB_Org << endl;
+    cout << "RpB_Org" << endl;
+    cout << RpB_Org << endl;
 
 quit:
 	destroyWindow("Einmessung Koordinatensystem");	
 	cap.release();
 }
-
+*/
 
 void MainWindow::on_Parameter_Updated_clicked()
 {
@@ -287,7 +297,7 @@ void MainWindow::on_Parameter_Updated_clicked()
         std::cout << "VideoCapture konnte nicht geoeffnet werden." << std::endl;
         return;
     }
-    Mat bw;
+
 
     cv::SimpleBlobDetector::Params params;
     update_Parameters(&params);
@@ -305,40 +315,46 @@ void MainWindow::on_Parameter_Updated_clicked()
       cap >> frame;
       //cv::resize(frame, frame, size);
       keypoints.clear();
-      
+
+      Mat bw;
+
       ticks = clock();
       cvtColor(frame, bw, CV_BGR2GRAY);
       
 
       cv::Mat binary;
       // TODO: Threshold anpassen
-      threshold( bw, binary, 125, 255, THRESH_BINARY );
+      threshold( bw, binary, 50, 255, THRESH_BINARY );
       imshow( "binary", binary );
 
       // noise removal
-      cv::Mat kernel = Mat::ones( 3, 3, bw.type() );
-      cv::Mat binary_opened;
-		morphologyEx( binary, binary_opened, MORPH_OPEN, kernel );
-		imshow( "binary_opened", binary_opened );
+      cv::Mat kernel = Mat::ones( 5, 5, bw.type() );
+      //cv::Mat binary_opened;
+        //morphologyEx( binary, binary_opened, MORPH_OPEN, kernel );
+        //imshow( "binary_opened", binary_opened );
 
 		// TODO: Alternative checken: watershed(src, markers);
 		// Finding sure foreground area
-		cv::Mat dist_transformed;
-		distanceTransform(binary_opened, dist_transformed, CV_DIST_L2, 3);
+        cv::Mat dist_transformed;// = Mat::zeros(frame.size(), CV_8U);
+        distanceTransform(binary, dist_transformed, CV_DIST_L2, 3);
 		imshow( "dist_transformed", dist_transformed );
 
 		cv::Mat dist_transformat_thres;
 		// TODO: Min aus XML einlesen
-		float Min = 8;	// Durchmesser in mm
+        float Min = 0.3;	// Durchmesser in mm
 		// Alles, was unterhalb von dem halben Durchmesser ist, fliegt raus
-		threshold( dist_transformed, dist_transformat_thres, static_cast<uint>(Min/masstab/2.0), 255, CV_THRESH_BINARY );
-		//threshold( dist_transformed, dist_transformat_thres, 0.7*dist_transform.max(), 255, CV_THRESH_BINARY );
+        //threshold( dist_transformed, dist_transformat_thres, static_cast<uint>(Min/masstab/2.0), 255, CV_THRESH_BINARY );
+        threshold( dist_transformed, dist_transformat_thres, 20, 255, THRESH_BINARY );
 		imshow( "dist_transformat_thres", dist_transformat_thres );
 
-		
+        dist_transformat_thres.convertTo(dist_transformat_thres, CV_8U);
+
+        //Mat temp;// = Mat::zeros( frame.size(), CV_8U );    dist_transformat_thres
+        //cvtColor(dist_transformat_thres, temp, CV_BGR2GRAY);
+
 		// Detektion über Kontur
     	vector<vector<Point> > contours;
-    	findContours(dist_transformat_thres, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+        findContours(dist_transformat_thres, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
     	// Mittelpunkt der Kontur bestimmen
     	vector<Point> pos;
@@ -348,13 +364,15 @@ void MainWindow::on_Parameter_Updated_clicked()
     		for( int i = 0; i < contour.size(); i++ ){
     			center += contour.at(i);
     		}
-    		center /= contour.size();
+            center.x /= contour.size();
+            center.y /= contour.size();
 
     		// TODO: Max aus XML auslesen
-			float Max = 60;	// Durchmesser in mm
+            float Max = 10;	// Durchmesser in mm
     		// hier Größe berechnen und entsprechend Filtern
     		double area = contourArea( contour );
-    		if ( area/M_PI < (Max/masstab/2)*(Max/masstab/2) ){
+            if ( area/M_PI < (Max/masstab/2)*(Max/masstab/2) &&
+                 area/M_PI > (Min/masstab/2)*(Min/masstab/2)){
 	    		circle(bw, center, 5, CV_RGB(255,0,0), -1);
    	 		pos.push_back(center);
    	 	}
@@ -417,9 +435,9 @@ void MainWindow::on_Parameter_Updated_clicked()
       std::cout << "Keypoints:" << keypoints.size() << std::endl;
       Mat im_with_keypoints;
 
-
+*/
       std::cout << "Calculated in " << (double)(clock() - ticks)/CLOCKS_PER_SEC << " seconds" << std::endl;
-
+/*
       drawKeypoints( bw_invert, keypoints, im_with_keypoints, Scalar(255, 0, 0),  DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
       cv::cvtColor(im_with_keypoints, im_with_keypoints, CV_BGR2RGB);
 		*/

@@ -7,7 +7,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
-
+#include <QtXml/QtXml>
 #include "config_manager.h"
 
 using namespace cv;
@@ -21,7 +21,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(struct SBD_Config *SBD_config, QWidget *parent = 0);
+    explicit MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWidget *parent = 0);
     ~MainWindow();
 
 private slots:
