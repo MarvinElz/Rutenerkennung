@@ -9,11 +9,29 @@
 
 clock_t ticks;
 
+/*
+	┌─────→ x
+	│ {B}
+	↓y
+						↑ x
+				y		│
+				←─────┘{K}
+*/
+
+
+
 // Liste von Punkten, jeweils im realen (Kinematik-) und virtuellen (Kamera/Bild-)Koordinatensystem
 vector<Vec2i> B_Points;
 vector<Vec2f> K_Points;
 
-Mat R_B_T = cv::Mat(2, 3, CV_32F);
+// Rotationsmatrix von B nach R
+Mat R_B_R = Mat::zeros(2, 2, CV_32F);
+
+// Translationsvektor von Ursprung (Org = Origin) K-System nach B-System dargestellt im
+// K-System
+Mat RpB_Org = Mat::zeros(2,1,CV_32F);
+
+
 
 using namespace cv;
 
@@ -72,7 +90,8 @@ MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWi
 				K_Points.push_back(vec);
 			}
 		}
-		// Parsen von R_B_R in R_B_T
+
+		// Parsen von R_B_R
 		nodeList = cam_element.elementsByTagName("Rotation");
 		if( !nodeList.isempty() ){
 			QDomElement rotation_element = nodeList.at(0).toElement();
@@ -82,9 +101,10 @@ MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWi
 				QDomElement mat = nodeList.at(ii).toElement();
 				char mat_entry[3] = mat.attribute("id").toLocal8Bit().data();
 				qInfo() << "\t\t\tRead Mat_Entry " << mat.attribute("id");
-				R_B_T.at<float>(mat_entry[0]-'1',mat_entry[1]-'1') = mat.text().toFloat();
+				R_B_R.at<float>(mat_entry[0]-'1',mat_entry[1]-'1') = mat.text().toFloat();
 			}
 		}
+		cout << "R_B_R" << R_B_R << endl;
 
 		// Parsen von R_B_Org in R_B_T
 		nodeList = cam_element.elementsByTagName("Translation");
@@ -96,12 +116,12 @@ MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWi
 				qInfo() << "\t\t" << calib_element.tagName();
 				nodeList = calib_element.elementsByTagName("Point");
 				QDomElement point = nodeList.at(ii).toElement();
-				R_B_T.at<float>(0,2) = point.elementsByTagName("x").at(0).toElement().text().toFloat();
-				R_B_T.at<float>(1,2) = point.elementsByTagName("y").at(0).toElement().text().toFloat();
+				RpB_Org.at<float>(0,0) = point.elementsByTagName("x").at(0).toElement().text().toFloat();
+				RpB_Org.at<float>(1,0) = point.elementsByTagName("y").at(0).toElement().text().toFloat();
 			}
 		}
 	}
-	cout << R_B_T << endl;
+	cout << "RpB_Org" << RpB_Org << endl;
 }
 
 MainWindow::~MainWindow()
@@ -138,11 +158,6 @@ erzeugen wir uns ein Bild aus der Kamera (wenn sie an ihrer finalen Position ang
 und lesen es am PC ein. Nachteil ist, dass wir dann vor Ort keine Änderungen übernehmen
 können 
 */
-
-
-// TODO: wie werden die K_Points eingelesen?
-// Über XML?
-
 
 static void onMouse( int event, int x, int y, int flag , void* param ){
 	Vec2i pos = Vec2i(x,y);
@@ -221,13 +236,19 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
 		R_D.at<float>(1,i) = R_Points.at(i)[1];
 	}
 
-	qInfo() << R_D;
-	qInfo() << B_D;
+	cout << "R_D:" << R_D << endl;
+	cout << "B_D:" << B_D << endl;
 
 	Mat temp = B_D * B_D.t();
-	R_D * B_D.t() * temp.inv();
+	Mat R_B_T = R_D * B_D.t() * temp.inv();
 
-	cout << R_B_T << endl;
+	cout << "R_B_T:" << R_B_T << endl;
+
+	// TODO: R_B_T aufteilen in Mat R_B_R und Mat RpB_Org
+	R_B_R   = R_B_T(cv::Rect(0,0,2,2)).clone();
+	cout << "R_B_R:" << R_B_R << endl;
+	RpB_Org = R_B_T(cv::Rect(0,2,1,2)).clone();
+	cout << "RpB_Org:" << RpB_Org << endl;
 
 quit:
 	destroyWindow("Einmessung Koordinatensystem");	
