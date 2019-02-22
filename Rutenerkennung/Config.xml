@@ -16,6 +16,22 @@
 	<SBT_Config>
 	</SBT_Config>
 
+	<Erkennung>
+		<!-- Minimale Anzahl der notwendigen Detektion eines Stecklings
+			bis Position als plausibel angenommen werden kann -->
+		<Min_Wiedererkennungen>10</Min_Wiedererkennungen>
+		<!-- Maximale Abweichung der Position des Stecklins, in der
+			ein Wiederereknnen akzeptiert ist, in px -->
+		<Max_Abweichung>10</Max_Abweichung>
+
+		<Threshold></Threshold>
+	</Erkennung>
+
+	<Kommunikation>
+		<Baudrate>115200</Baudrate>
+		<Serial>"/dev/ttyAMA0"</Serial>
+	</Kommunikation>
+
 	<Stecklinge>
 		<Groesse>
 			<!-- DURCHMESSER IN MM -->
@@ -24,6 +40,22 @@
 		</Groesse>		
 	</Stecklinge>
 
+	<Video>
+		<!-- Entscheidung über:
+			bool ok = false;
+			int cam = str.toInt(&ok, 10);       // dec == 0, ok == false
+			if (ok) Quelle ist Kamera -> cap(cam);
+			else
+				Quelle ist Bild oder Video -> cap(str)
+
+			Begrenzung auf 10fps	
+		<!-- Kamera -->
+		<Quelle>"0"</Quelle>
+		<!-- Bild -->
+		<Quelle>"/home/pi/Desktop/Rute.JPG"</Quelle>
+		<!-- Video -->
+		<Quelle>"/home/pi/Desktop/Ruten.MP4"</Quelle>
+	</Video>
 
 
 	<Camera>
@@ -55,8 +87,8 @@
 			<!-- Maßstab: 0.1mm/px --> 
 			<r id="11">-0.1</r>
 			<r id="12"> 0.0</r>
-                        <r id="21"> 0.0</r>
-                        <r id="22">-0.1</r>
+			<r id="21"> 0.0</r>
+			<r id="22">-0.1</r>
 		</Rotation>	
 	
 		<Translation>

@@ -67,6 +67,7 @@ private:
     struct SBD_Config *SBD_config;
     QDomDocument *m_xml_doc;
     void update_Parameters(cv::SimpleBlobDetector::Params*);
+    vector<Vec2i> m_pos;
 };
 
 #endif // MAINWINDOW_H

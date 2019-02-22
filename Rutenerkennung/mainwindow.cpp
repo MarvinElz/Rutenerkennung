@@ -69,8 +69,8 @@ MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWi
 
 	SBD_config->thresholdStep = ui->dSB_thresholdStep->value();
 
-    // K_Points aus XML einlesen
-    QDomElement docElem = m_xml_doc->documentElement(); 	// Rutenerkennung
+	// K_Points aus XML einlesen
+	QDomElement docElem = m_xml_doc->documentElement(); 	// Rutenerkennung
 	QString rootTag = docElem.tagName();
 	qInfo() << rootTag;
 
@@ -194,7 +194,7 @@ static void onMouse( int event, int x, int y, int flag , void* param ){
 	}
 }
 
-/*
+
 // Das Einmessen der Koordinatensysteme (K-Kinematik, B-Bild) wird
 // durch eine Vorlage realisiert, die an die entsprechende Stelle im Blick-
 // feld der Kamera angebracht wrid. Über erkennbare Symbole, die im 
@@ -206,6 +206,7 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
 	cv::VideoCapture cap(0);
    if( !cap.isOpened() ){
       std::cout << "VideoCapture konnte nicht geoeffnet werden." << std::endl;
+      std::cout << "Evtl. wird es von der Rutenerkennung blockiert?" << std::endl;
       return;
    }
 
@@ -262,13 +263,13 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
 	Mat temp =  B_D * B_D.t();
 	Mat R_B_T = R_D * B_D.t() * temp.inv();
 
-    cout << "R_B_T" << endl;
-    cout << R_B_T << endl;
+	cout << "R_B_T" << endl;
+	cout << R_B_T << endl;
 
 	// R_B_T aufteilen in Mat R_B_R und Mat RpB_Org
 	R_B_R   = R_B_T(cv::Rect(0,0,2,2)).clone();
-    cout << "R_B_R" << endl;
-    cout << R_B_R << endl;
+	cout << "R_B_R" << endl;
+	cout << R_B_R << endl;
 
 	float masstabx = norm( R_B_R(cv::Rect(0,0,1,2)) , Mat::zeros(2,1), NORM_L2 );
 	float masstaby = norm( R_B_R(cv::Rect(0,1,1,2)) , Mat::zeros(2,1), NORM_L2 );
@@ -276,14 +277,14 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
 	cout << "Masstab: " << masstab;
 
 	RpB_Org = R_B_T(cv::Rect(0,2,1,2)).clone();
-    cout << "RpB_Org" << endl;
-    cout << RpB_Org << endl;
+	cout << "RpB_Org" << endl;
+	cout << RpB_Org << endl;
 
 quit:
 	destroyWindow("Einmessung Koordinatensystem");	
 	cap.release();
 }
-*/
+
 
 void MainWindow::on_Parameter_Updated_clicked()
 {
@@ -299,13 +300,14 @@ void MainWindow::on_Parameter_Updated_clicked()
     }
 
 
-    cv::SimpleBlobDetector::Params params;
-    update_Parameters(&params);
+	//cv::SimpleBlobDetector::Params params;
+	//update_Parameters(&params);
 
-    cv::SimpleBlobDetector *sbd = new cv::SimpleBlobDetector(params);
+	//cv::SimpleBlobDetector *sbd = new cv::SimpleBlobDetector(params);
 
-    std::vector<KeyPoint> keypoints;
+	//std::vector<KeyPoint> keypoints;
 
+    // Seiterverhältnis beibehalten !
     Size size(400, 300);
 
     cv::Mat frame;
@@ -314,70 +316,78 @@ void MainWindow::on_Parameter_Updated_clicked()
 
       cap >> frame;
       //cv::resize(frame, frame, size);
-      keypoints.clear();
+      //keypoints.clear();
 
       Mat bw;
 
       ticks = clock();
       cvtColor(frame, bw, CV_BGR2GRAY);
       
-
       cv::Mat binary;
       // TODO: Threshold anpassen
       threshold( bw, binary, 50, 255, THRESH_BINARY );
       imshow( "binary", binary );
 
-      // noise removal
-      cv::Mat kernel = Mat::ones( 5, 5, bw.type() );
-      //cv::Mat binary_opened;
-        //morphologyEx( binary, binary_opened, MORPH_OPEN, kernel );
-        //imshow( "binary_opened", binary_opened );
+      // noise removal (rechenaufwendig)
+      cv::Mat kernel = Mat::ones( 3, 3, bw.type() );
+      cv::Mat binary_opened;
+		morphologyEx( binary, binary_opened, MORPH_OPEN, kernel );
+      imshow( "binary_opened", binary_opened );
 
 		// TODO: Alternative checken: watershed(src, markers);
 		// Finding sure foreground area
-        cv::Mat dist_transformed;// = Mat::zeros(frame.size(), CV_8U);
-        distanceTransform(binary, dist_transformed, CV_DIST_L2, 3);
+		cv::Mat dist_transformed;// = Mat::zeros(frame.size(), CV_8U);
+		distanceTransform(binary_opened, dist_transformed, CV_DIST_L2, 3);
 		imshow( "dist_transformed", dist_transformed );
 
 		cv::Mat dist_transformat_thres;
 		// TODO: Min aus XML einlesen
-        float Min = 0.3;	// Durchmesser in mm
+		float Min = 0.3;	// Durchmesser in mm
 		// Alles, was unterhalb von dem halben Durchmesser ist, fliegt raus
-        //threshold( dist_transformed, dist_transformat_thres, static_cast<uint>(Min/masstab/2.0), 255, CV_THRESH_BINARY );
-        threshold( dist_transformed, dist_transformat_thres, 20, 255, THRESH_BINARY );
+		//threshold( dist_transformed, dist_transformat_thres, static_cast<uint>(Min/masstab/2.0), 255, CV_THRESH_BINARY );
+		threshold( dist_transformed, dist_transformat_thres, 20, 255, THRESH_BINARY );
 		imshow( "dist_transformat_thres", dist_transformat_thres );
 
-        dist_transformat_thres.convertTo(dist_transformat_thres, CV_8U);
+		dist_transformat_thres.convertTo(dist_transformat_thres, CV_8U);
 
-        //Mat temp;// = Mat::zeros( frame.size(), CV_8U );    dist_transformat_thres
-        //cvtColor(dist_transformat_thres, temp, CV_BGR2GRAY);
+		//Mat temp;// = Mat::zeros( frame.size(), CV_8U );    dist_transformat_thres
+		//cvtColor(dist_transformat_thres, temp, CV_BGR2GRAY);
 
 		// Detektion über Kontur
     	vector<vector<Point> > contours;
-        findContours(dist_transformat_thres, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+		findContours(dist_transformat_thres, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
-    	// Mittelpunkt der Kontur bestimmen
-    	vector<Point> pos;
+    	// Mittelpunkt der Kontur (Position der Rute) bestimmen
+    	m_pos.clear();
     	for ( int c = 0; c < contours.size(); c++ ){
     		Point center = Point(0,0);
     		const vector<Point> contour = contours.at(c);
     		for( int i = 0; i < contour.size(); i++ ){
     			center += contour.at(i);
     		}
-            center.x /= contour.size();
-            center.y /= contour.size();
+         center.x /= contour.size();
+         center.y /= contour.size();
 
     		// TODO: Max aus XML auslesen
-            float Max = 10;	// Durchmesser in mm
+         float Max = 10;	// Durchmesser in mm
     		// hier Größe berechnen und entsprechend Filtern
+    		// eine Filterung über Min ist hier leider nicht möglich,
+    		// weil die Querschnittsflächen der Ruten aufgrund der
+    		// vorherigen Schritte kleiner sind als in Realität
     		double area = contourArea( contour );
-            if ( area/M_PI < (Max/masstab/2)*(Max/masstab/2) &&
-                 area/M_PI > (Min/masstab/2)*(Min/masstab/2)){
+         if ( area/M_PI < (Max/masstab/2)*(Max/masstab/2) ){
 	    		circle(bw, center, 5, CV_RGB(255,0,0), -1);
-   	 		pos.push_back(center);
+   	 		m_pos.push_back(Vec2i(center.x, center.y));
    	 	}
     	}
     	imshow( "bw", bw );
+
+    	// TODO: im eigenen Thread aufrufen:
+    	// Auswertung der Rutenpositionen hinsichtlich der Plausibilität
+    	// Je häufiger ein Steckling in Bildern detektiert wurde,
+    	// desto eher soll er ausgeworfen werden.
+
+
 		/*
     	// Marker für Watershed vorbereiten
     	Mat markers = Mat::zeros(dist.size(), CV_32SC1);
