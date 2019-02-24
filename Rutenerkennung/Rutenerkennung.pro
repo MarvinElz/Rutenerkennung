@@ -28,17 +28,21 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     Beobachter.cpp \
     Kommunikation.cpp \
-    Steckling.cpp
+    Steckling.cpp \
+    Rutenerkennung.cpp \
+    Videoquelle.cpp
 
 HEADERS  += mainwindow.h \
     config_manager.h \
     Beobachter.h \
     Kommunikation.h \
-    Steckling.h
+    Steckling.h \
+    Rutenerkennung.h \
+    Videoquelle.h
 
 FORMS    += mainwindow.ui
 
-LIBS     += -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lboost_system
+LIBS     += -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lpthread
 
 DISTFILES += \
     Config.xml

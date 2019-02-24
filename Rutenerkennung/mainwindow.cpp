@@ -334,11 +334,11 @@ void MainWindow::on_Parameter_Updated_clicked()
       
       cv::Mat binary;
       // TODO: Threshold anpassen
-      threshold( bw, binary, 50, 255, THRESH_BINARY );
+      threshold( bw, binary, 80, 255, THRESH_BINARY );
       imshow( "binary", binary );
 
       // noise removal (rechenaufwendig)
-      cv::Mat kernel = Mat::ones( 3, 3, bw.type() );
+      cv::Mat kernel = Mat::ones( 2, 2, bw.type() );
       cv::Mat binary_opened;
 		morphologyEx( binary, binary_opened, MORPH_OPEN, kernel );
       imshow( "binary_opened", binary_opened );

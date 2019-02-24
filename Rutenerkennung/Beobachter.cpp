@@ -30,6 +30,8 @@ Beobachter::Beobachter( QDomDocument *xml_doc ){
 }
 
 void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
+    cout << "ErkannteStecklinge" << endl;
+
     // Vergleich der erhaltenen Koordinaten der erkannten Stecklinge
     // mit den in m_stecklinge gespeichertern
 
