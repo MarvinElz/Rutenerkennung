@@ -62,6 +62,8 @@ private slots:
 
     void on_dSB_minCircularity_valueChanged(double arg1);
 
+    void on_Einmessung_Koordinatensystem_clicked();
+
 private:
     Ui::MainWindow *ui;
     struct SBD_Config *SBD_config;

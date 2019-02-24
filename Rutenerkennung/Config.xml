@@ -49,7 +49,7 @@
 				Quelle ist Bild oder Video -> cap(str)
 
 			Begrenzung auf 10fps	
-		<!-- Kamera -->
+                 Kamera -->
 		<Quelle>"0"</Quelle>
 		<!-- Bild -->
 		<Quelle>"/home/pi/Desktop/Rute.JPG"</Quelle>
@@ -62,39 +62,39 @@
 		<!-- Punkte zur Einmessung der Koordinatensysteme -->
 		<Calibration>
 			<Point id="1">
-				<x>1.05</x>
-				<y>1.05</y>
+                                <x>20</x>
+                                <y>20</y>
 			</Point>
 			<Point id="2">
-				<x>1.05</x>
-				<y>1.05</y>
+                                <x>270</x>
+                                <y>20</y>
 			</Point>
 			<Point id="3">
-				<x>1.05</x>
-				<y>1.05</y>
+                                <x>270</x>
+                                <y>180</y>
 			</Point>
 			<Point id="4">
-				<x>1.05</x>
-				<y>1.05</y>
+                                <x>20</x>
+                                <y>180</y>
 			</Point>
 			<Point id="5">
-				<x>1.05</x>
-				<y>1.05</y>
+                                <x>130</x>
+                                <y>90</y>
 			</Point>
 		</Calibration>
 
 		<Rotation>
 			<!-- Maßstab: 0.1mm/px --> 
-			<r id="11">-0.1</r>
-			<r id="12"> 0.0</r>
-			<r id="21"> 0.0</r>
-			<r id="22">-0.1</r>
+                        <r id="11">-0.51302803</r>
+                        <r id="12">0.021497726</r>
+                        <r id="21">-0.015044034</r>
+                        <r id="22">-0.53004223</r>
 		</Rotation>	
 	
 		<Translation>
 			<Point>
-				<x>1.05</x>
-				<y>1.05</y>
+                                <x>298.63617</x>
+                                <y>232.82028</y>
 			</Point>
 		</Translation>	
 	</Camera>

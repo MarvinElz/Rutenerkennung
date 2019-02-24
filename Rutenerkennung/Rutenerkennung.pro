@@ -25,14 +25,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    Beobachter.cpp \
+    Kommunikation.cpp \
+    Steckling.cpp
 
 HEADERS  += mainwindow.h \
-    config_manager.h
+    config_manager.h \
+    Beobachter.h \
+    Kommunikation.h \
+    Steckling.h
 
 FORMS    += mainwindow.ui
 
-LIBS     += -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d
+LIBS     += -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lboost_system
 
 DISTFILES += \
     Config.xml

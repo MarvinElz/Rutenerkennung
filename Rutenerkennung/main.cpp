@@ -11,6 +11,9 @@
 #include <QDebug>
 #include <QtXml/QtXml>
 
+#include "Beobachter.h"
+#include "Kommunikation.h"
+
 #include "config_manager.h"
 
 // QStringList options;
@@ -30,6 +33,10 @@ int main(int argc, char *argv[])
         xml_doc.setContent(file);
         // TODO: SBD_config füllen mit Daten aus .xml Datei.
     }
+
+    Beobachter *b = new Beobachter( &xml_doc );
+
+    Kommunikation *k = new Kommunikation(&xml_doc);
 
     QApplication a(argc, argv);
     MainWindow w( &SBD_config, &xml_doc );

@@ -29,11 +29,11 @@ vector<Vec2f> K_Points;
 
 // Rotationsmatrix von B nach R
 // Enthält den Maßstab
-Mat R_B_R = Mat::zeros(2, 2, CV_32F);
+Mat K_B_R = Mat::zeros(2, 2, CV_32F);
 
 // Translationsvektor von Ursprung (Org = Origin) K-System nach B-System dargestellt im
 // K-System
-Mat RpB_Org = Mat::zeros(2,1,CV_32F);
+Mat KpB_Org = Mat::zeros(2,1,CV_32F);
 
 // Maßstab B->K
 // 0.1 mm/px
@@ -74,7 +74,7 @@ MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWi
 	QString rootTag = docElem.tagName();
 	qInfo() << rootTag;
 
-	QDomNodeList nodeList = docElem.elementsByTagName("Camera"); 
+    QDomNodeList nodeList = docElem.elementsByTagName("Camera");
     if( !nodeList.isEmpty() ){
 		QDomElement cam_element = nodeList.at(0).toElement();
 		qInfo() << "\t" << cam_element.tagName();
@@ -99,7 +99,7 @@ MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWi
 			}
 		}
 		
-		// Parsen von R_B_R
+        // Parsen von K_B_R
 		nodeList = cam_element.elementsByTagName("Rotation");
         if( !nodeList.isEmpty() ){
 			QDomElement rotation_element = nodeList.at(0).toElement();
@@ -109,13 +109,13 @@ MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWi
 				QDomElement mat = nodeList.at(ii).toElement();
                 char *mat_entry = mat.attribute("id").toLocal8Bit().data();
 				qInfo() << "\t\t\tRead Mat_Entry " << mat.attribute("id");
-				R_B_R.at<float>(mat_entry[0]-'1',mat_entry[1]-'1') = mat.text().toFloat();
+                K_B_R.at<float>(mat_entry[0]-'1',mat_entry[1]-'1') = mat.text().toFloat();
 			}
 		}
-        cout << "R_B_R" << endl;
-        cout << R_B_R << endl;
+        cout << "K_B_R" << endl;
+        cout << K_B_R << endl;
 
-		// Parsen von R_B_Org in R_B_T
+        // Parsen von K_B_Org in K_B_T
 		nodeList = cam_element.elementsByTagName("Translation");
         if( !nodeList.isEmpty() ){
 			QDomElement trans_element = nodeList.at(0).toElement();
@@ -125,13 +125,13 @@ MainWindow::MainWindow(struct SBD_Config *SBD_config, QDomDocument *xml_doc, QWi
 				qInfo() << "\t\t" << calib_element.tagName();
 				nodeList = calib_element.elementsByTagName("Point");
                 QDomElement point = nodeList.at(0).toElement();
-				RpB_Org.at<float>(0,0) = point.elementsByTagName("x").at(0).toElement().text().toFloat();
-				RpB_Org.at<float>(1,0) = point.elementsByTagName("y").at(0).toElement().text().toFloat();
+                KpB_Org.at<float>(0,0) = point.elementsByTagName("x").at(0).toElement().text().toFloat();
+                KpB_Org.at<float>(1,0) = point.elementsByTagName("y").at(0).toElement().text().toFloat();
 			}
 		}
 	}
-    cout << "RpB_Org" << endl;
-    cout << RpB_Org << endl;
+    cout << "KpB_Org" << endl;
+    cout << KpB_Org << endl;
 }
 
 MainWindow::~MainWindow()
@@ -200,7 +200,8 @@ static void onMouse( int event, int x, int y, int flag , void* param ){
 // feld der Kamera angebracht wrid. Über erkennbare Symbole, die im 
 // K-Koordinatensystem definiert wurden, kann die Transformation B->K
 // berechnet werden.
-void MainWindow::on_Einmessung_Koordinatensystem(){
+
+void MainWindow::on_Einmessung_Koordinatensystem_clicked(){
 	namedWindow("Einmessung Koordinatensystem", WINDOW_NORMAL);
 	// evtl. über Bild laden?
 	cv::VideoCapture cap(0);
@@ -220,7 +221,7 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
    	cap >> frame;
 
 		if( !B_Points.empty() ){
-			for (for uint i = 0; i < B_Points.size(); i++){
+            for (uint i = 0; i < B_Points.size(); i++){
 				// Zeichne einen Kreis, damit wird sicher sind.
 				Point p = B_Points.at(i);
 				uint radius = 3;
@@ -231,54 +232,62 @@ void MainWindow::on_Einmessung_Koordinatensystem(){
    	imshow( "Einmessung Koordinatensystem", frame );
 
    	//usleep( 1 );
-   	if( cv::waitKey(1) >= 0 ) break;
+    if( cv::waitKey(30) >= 0 ) break;
    }
+
+   Mat K_D;
+   Mat B_D;
+   Mat temp;
+   Mat K_B_T;
+   float masstabx, masstaby;
+
+   uint size_points = B_Points.size();
 
 	// Berechne Transformation
 	if( B_Points.size() < 3 || B_Points.size() > K_Points.size() ){
 		qInfo() << "Achtung: Diskrepanz bei Anzahl der Punkte waehrend der Einmessung des Koordinatensystems";
-		goto quit;
+        goto quit;
 	}
 
-	uint size_points = B_Points.size();
 
-	// D: Data, R: real (K-Koordinaten), B: Bild (B-Koordinaten)
-	Mat R_D = Mat::ones( 2, size_points, CV_32F );
-	Mat B_D = Mat::ones( 3, size_points, CV_32F );
+
+    // D: Data, K: real (K-Koordinaten), B: Bild (B-Koordinaten)
+    K_D = Mat::ones( 2, size_points, CV_32F );
+    B_D = Mat::ones( 3, size_points, CV_32F );
 
 	// Fill Mats
 	for (uint i = 0; i < size_points; i++){
 		B_D.at<float>(0,i) = (float)B_Points.at(i)[0];
 		B_D.at<float>(1,i) = (float)B_Points.at(i)[1];
 
-		R_D.at<float>(0,i) = R_Points.at(i)[0];
-		R_D.at<float>(1,i) = R_Points.at(i)[1];
+        K_D.at<float>(0,i) = K_Points.at(i)[0];
+        K_D.at<float>(1,i) = K_Points.at(i)[1];
 	}
 
-    cout << "R_D" << endl;
-    cout << R_D << endl;
+    cout << "K_D" << endl;
+    cout << K_D << endl;
     cout << "B_D" << endl;
     cout << B_D << endl;
 
-	Mat temp =  B_D * B_D.t();
-	Mat R_B_T = R_D * B_D.t() * temp.inv();
+    temp =  B_D * B_D.t();
+    K_B_T = K_D * B_D.t() * temp.inv();
 
 	cout << "R_B_T" << endl;
-	cout << R_B_T << endl;
+    cout << K_B_T << endl;
 
 	// R_B_T aufteilen in Mat R_B_R und Mat RpB_Org
-	R_B_R   = R_B_T(cv::Rect(0,0,2,2)).clone();
-	cout << "R_B_R" << endl;
-	cout << R_B_R << endl;
+    K_B_R   = K_B_T(cv::Rect(0,0,2,2)).clone();
+    cout << "K_B_R" << endl;
+    cout << K_B_R << endl;
 
-	float masstabx = norm( R_B_R(cv::Rect(0,0,1,2)) , Mat::zeros(2,1), NORM_L2 );
-	float masstaby = norm( R_B_R(cv::Rect(0,1,1,2)) , Mat::zeros(2,1), NORM_L2 );
+    masstabx = norm( K_B_R(cv::Rect(0,0,1,2)) , Mat::zeros(2,1, CV_32F), NORM_L2 );
+    masstaby = norm( K_B_R(cv::Rect(1,0,1,2)) , Mat::zeros(2,1, CV_32F), NORM_L2 );
 	masstab = (masstabx + masstaby)/2;
-	cout << "Masstab: " << masstab;
+    cout << "Masstab: " << masstab << endl;
 
-	RpB_Org = R_B_T(cv::Rect(0,2,1,2)).clone();
-	cout << "RpB_Org" << endl;
-	cout << RpB_Org << endl;
+    KpB_Org = K_B_T(cv::Rect(2,0,1,2)).clone();
+    cout << "KpB_Org" << endl;
+    cout << KpB_Org << endl;
 
 quit:
 	destroyWindow("Einmessung Koordinatensystem");	
@@ -460,7 +469,7 @@ void MainWindow::on_Parameter_Updated_clicked()
       if( cv::waitKey(1) >= 0 ) break;
     }
 
-    delete sbd;
+    //delete sbd;
     cap.release();
 }
 
@@ -550,3 +559,4 @@ void MainWindow::on_dSB_minCircularity_valueChanged(double arg1)
 {
     SBD_config->minCircularity = arg1;
 }
+
