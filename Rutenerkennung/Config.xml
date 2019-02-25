@@ -47,14 +47,12 @@
 			if (ok) Quelle ist Kamera -> cap(cam);
 			else
 				Quelle ist Bild oder Video -> cap(str)
-
-			Begrenzung auf 10fps	
                  Kamera -->
 		<Quelle>"0"</Quelle>
-		<!-- Bild -->
-		<Quelle>"/home/pi/Desktop/Rute.JPG"</Quelle>
-		<!-- Video -->
-		<Quelle>"/home/pi/Desktop/Ruten.MP4"</Quelle>
+		<!-- Bild 
+		<Quelle>"/home/pi/Desktop/Rute.JPG"</Quelle>  -->
+		<!-- Video 
+		<Quelle>"/home/pi/Desktop/Ruten.MP4"</Quelle> -->
 	</Video>
 
 

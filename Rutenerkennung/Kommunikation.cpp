@@ -53,7 +53,7 @@ Kommunikation::Kommunikation( QDomDocument *xml_doc ){
    }
 
    // TODO: Homing der Kinematik (und was sonst noch ansteht) ausführen
-   
+   // "G28 X Y"
 
    // Rotationsmatrix und Translationsvektor aus XML einlesen
    // Parsen von K_B_R
@@ -126,26 +126,34 @@ void Kommunikation::run(){
     int rv;
     struct timeval tv;
     fd_set set;
-    
+    m_running = true;
     while(m_running){
         if( m_serial >= 0 ){
+
+            // Timeout für read
             tv.tv_sec = 0;
             tv.tv_usec = 10 * 1000;
             FD_ZERO(&set); /* clear the set */
 
+            // m_serial blockieren
             m_mutex.lock();
             FD_SET(m_serial, &set); /* add our file descriptor to the set */
             rv = select(m_serial + 1, &set, NULL, NULL, &tv);
             if( rv > 0 )
                 n = read (m_serial, buffer, sizeof(buffer) );
             m_mutex.unlock();   
+            // m_serial wieder freigeben
             
             cout << "Gelesene Bytes: " << n << endl;
             cout << "Gelesen:" << b << endl;
 
-            // TODO: nach dem richtigen Identifier suchen
-            emit BefehlBearbeitet();
+            // nach dem richtigen Identifier suchen
+            if (strcmp(buffer, "Done") == 0){ // evtl. \n anfügen?
+                cout << "emit BefehlBearbeitet" << endl;                
+                emit BefehlBearbeitet();
+            }
         }else{
+            cout << "m_serial nicht (mehr) geoeffnet" << endl;
             usleep(1000);
         }
     }

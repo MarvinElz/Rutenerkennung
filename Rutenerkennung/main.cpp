@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
     
     v_thread->start();
     k_thread->start();
+
     // Bearbeitung starten
     QMetaObject::invokeMethod( v, "HoleNeuesBild"   , Qt::QueuedConnection );
     QMetaObject::invokeMethod( b, "BefehlBearbeitet", Qt::QueuedConnection );

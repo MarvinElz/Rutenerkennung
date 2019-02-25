@@ -30,10 +30,7 @@ signals:
 private:
     Mat frame;
     clock_t ticks;
-    cv::VideoCapture cap;
-    //pthread_t thread;
-    //static void * static_fct( void* );
-    
+    cv::VideoCapture cap;    
 };
 
 #endif // VIDEOQUELLE_H
