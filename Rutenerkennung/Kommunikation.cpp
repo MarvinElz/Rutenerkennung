@@ -96,6 +96,7 @@ Kommunikation::Kommunikation( QDomDocument *xml_doc ){
 
 
 void Kommunikation::FahreAnPositionUndWirfAus(Vec2i Bp){
+    cout << "FahreAnPositionUndWirfAus" << endl;
     // Umrechnung von B-System in K-System
     Mat Bp_mat = Mat(2,1,CV_32F);
     Bp_mat.at<float>(0,0) = Bp[0];

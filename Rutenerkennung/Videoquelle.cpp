@@ -8,20 +8,13 @@ void * Videoquelle::static_fct( void*  p){
 */
 
 void Videoquelle::HoleNeuesBild(void){
-    cout << "Emit neues Bild" << endl;
+    cout << "Emit NeuesBild" << endl;
     emit NeuesBild( &frame );
 }
 
 
 void Videoquelle::ReadImage(  ) {
     while(1){
-        /*
-        if( (double)(clock() - ticks)/CLOCKS_PER_SEC < 0.2){
-            usleep(1000);
-            continue;
-        }
-        ticks = clock();
-        */
         //usleep(1000);
         if( !cap.isOpened() )
             break;
@@ -40,9 +33,6 @@ Videoquelle::Videoquelle(QDomDocument *xml_doc)
         std::cout << "VideoCapture konnte nicht geoeffnet werden." << std::endl;
         return;
     }
-
-    // TODO: Thread starten, der Bilder einließt
-    //int rc = pthread_create(&thread, NULL, &Videoquelle::static_fct, this); //, void);
 }
 
 

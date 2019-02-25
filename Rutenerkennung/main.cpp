@@ -56,14 +56,22 @@ int main(int argc, char *argv[])
     QObject::connect(v_thread, SIGNAL (started()), v, SLOT (ReadImage()));
     QObject::connect(v, SIGNAL (finished()), v_thread, SLOT (quit()));
 
-    QObject::connect( b, SIGNAL(FahreAnPositionUndWirfAus(Vec2i)),  k, SLOT(FahreAnPositionUndWirfAus(Vec2i) ));
-    QObject::connect( k, SIGNAL(BefehlBearbeitet()),                b, SLOT(BefehlBearbeitet() ));
-    QObject::connect( v, SIGNAL(NeuesBild( Mat* )),                 r, SLOT(NeuesBild( Mat* )) );
+    // Restlichen Signale verbinden
+    // Rutenerkennung löst Ausgabe des letzten Bildes aus
     QObject::connect( r, SIGNAL(HoleNeuesBild()),                   v, SLOT(HoleNeuesBild()));
+    // Videoquelle gibt aktuelles Bild zurück
+    QObject::connect( v, SIGNAL(NeuesBild( Mat* )),                 r, SLOT(NeuesBild( Mat* )) );
+    // Rutenerkennung gibt die im letzten Bild erkannten Ruten an den Beobachter
     QObject::connect( r, SIGNAL(ErkannteStecklinge( vector<Vec2i>)),b, SLOT(ErkannteStecklinge( vector<Vec2i>) ));
-
+    // Beobachter gibt die Position der geeignetsten Rute aus (in Bildkoordinaten)
+    QObject::connect( b, SIGNAL(FahreAnPositionUndWirfAus(Vec2i)),  k, SLOT(FahreAnPositionUndWirfAus(Vec2i) ));
+    // Kommunikation versendet den G-Code-Befehl und wartet, bis dieser abgearbeitet wurde und löst im Anschluss daran
+    // das Signal BefehlBearbeitet aus
+    QObject::connect( k, SIGNAL(BefehlBearbeitet()),                b, SLOT(BefehlBearbeitet() ));
+    
     v_thread->start();
     k_thread->start();
+    // Bearbeitung starten
     QMetaObject::invokeMethod( v, "HoleNeuesBild"   , Qt::QueuedConnection );
     QMetaObject::invokeMethod( b, "BefehlBearbeitet", Qt::QueuedConnection );
 
