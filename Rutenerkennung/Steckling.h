@@ -8,7 +8,7 @@ using namespace cv;
 class Steckling
 {
 public:
-    Steckling(Vec2i pos_);
+    Steckling(Vec2i);
     Vec2i pos;
     float m_plausibility;
 };

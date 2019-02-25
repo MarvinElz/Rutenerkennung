@@ -75,6 +75,7 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
 // das der letzte Befehl ausgeführt wurde. Daraufhin wird der günstigste Steckling gesucht, der als nächstes
 // ausgeworfen werden soll
 void Beobachter::BefehlBearbeitet(){
+    cout << "BefehlBearbeitet" << endl;
     // m_stecklinge nach dem optimalen Steckling durchsuchen, der die Anforderungen erfüllt und
     // die geringste Distanz zum Aktuator hat
 
@@ -98,7 +99,7 @@ void Beobachter::BefehlBearbeitet(){
 
     // Keiner der Stecklinge erfüllt die Anforderung
     if( best == NULL ){
-        cout << "Kein Optimum gefunden" << endl;
+        cout << "Kein Steckling erfuellt die Anforderung" << endl;
         goto emit_same_signal;
     }
 
@@ -107,9 +108,9 @@ void Beobachter::BefehlBearbeitet(){
     return;
 
 emit_same_signal:
-    // was passiert, wenn CNC-Befehl bearbeitet wurde, aber kein Steckling valid ist?
+    // was passiert, wenn CNC-Befehl bearbeitet wurde, aber kein Steckling valide ist?
     // kurz warten und BefehlBearbeitet erneut aufrufen
-    usleep(100000);
+    usleep(1000);
     QMetaObject::invokeMethod( this, "BefehlBearbeitet", Qt::QueuedConnection );
     return;
 }

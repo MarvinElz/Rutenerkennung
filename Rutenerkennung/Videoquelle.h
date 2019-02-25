@@ -21,16 +21,19 @@ public:
 
 public slots:
     void HoleNeuesBild(void);
+    void ReadImage( void );
 
 signals:
-    void NeuesBild( Mat *frame );
+	void finished( void );
+   void NeuesBild( Mat *frame );
+
 private:
     Mat frame;
     clock_t ticks;
     cv::VideoCapture cap;
-    pthread_t thread;
-    static void * static_fct( void* );
-    void ReadImage( );
+    //pthread_t thread;
+    //static void * static_fct( void* );
+    
 };
 
 #endif // VIDEOQUELLE_H

@@ -26,18 +26,37 @@ Kommunikation::Kommunikation( QDomDocument *xml_doc ){
             cout << "Verwende default-Wert: " << m_serialport << endl;
         }
     }
-/*
-    m_serial.open( m_serialport );
-    if( !m_serial.is_open() ){
+
+    m_serial = open( m_serialport, O_RDWR| O_NOCTTY );
+    
+    if( m_serial < 0 ){
         cout << m_serialport << " konnte nicht geoffnet werden." << endl;
+        //exit(0);
     }else{
-        boost::asio::serial_port_base::baud_rate baud_option(m_baudrate);
-        m_serial.set_option(baud_option); // set the baud rate after the port has been opened
+        struct termios term;
+        tcgetattr(m_serial, &term);
+        speed_t baudrate = B115200;
+        switch( m_baudrate ){
+            case 9600  : baudrate = B9600; break;
+            case 19200 : baudrate = B19200; break;
+            case 57600 : baudrate = B57600; break;
+            case 38400 : baudrate = B38400; break;
+            case 57600 : baudrate = B57600; break;
+            case 115200: baudrate = B115200; break;
+            case 230400: baudrate = B230400; break;
+            case 460800: baudrate = B460800; break;
+            default: cout << "Baudrate " << m_baudrate << " nicht unterstuetzt, nutze 115200" << endl; 
+        }
+        cfsetospeed(&term,baudrate);
+        cfsetispeed(&term,baudrate);
+        tcsetattr(m_serial, TCSANOW, &term);
    }
-   */
+
+   // TODO: Homing der Kinematik (und was sonst noch ansteht) ausführen
+   
 
    // Rotationsmatrix und Translationsvektor aus XML einlesen
-   // Parsen von R_B_R
+   // Parsen von K_B_R
     nodeList = docElem.elementsByTagName("Camera");
     if( !nodeList.isEmpty() ){
         QDomElement cam_element = nodeList.at(0).toElement();
@@ -50,11 +69,11 @@ Kommunikation::Kommunikation( QDomDocument *xml_doc ){
                 QDomElement mat = nodeList.at(ii).toElement();
                 char *mat_entry = mat.attribute("id").toLocal8Bit().data();
                 qInfo() << "\t\t\tRead Mat_Entry " << mat.attribute("id");
-                m_R_B_R.at<float>(mat_entry[0]-'1',mat_entry[1]-'1') = mat.text().toFloat();
+                m_K_B_R.at<float>(mat_entry[0]-'1',mat_entry[1]-'1') = mat.text().toFloat();
             }
         }
 
-        cout << "R_B_R" << m_R_B_R << endl;
+        cout << "K_B_R" << m_R_B_R << endl;
 
         // Parsen von R_B_Org in R_B_T
         nodeList = cam_element.elementsByTagName("Translation");
@@ -66,14 +85,14 @@ Kommunikation::Kommunikation( QDomDocument *xml_doc ){
                 qInfo() << "\t\t" << calib_element.tagName();
                 nodeList = calib_element.elementsByTagName("Point");
                 QDomElement point = nodeList.at(0).toElement();
-                m_RpB_Org.at<float>(0,0) = point.elementsByTagName("x").at(0).toElement().text().toFloat();
-                m_RpB_Org.at<float>(1,0) = point.elementsByTagName("y").at(0).toElement().text().toFloat();
+                m_KpB_Org.at<float>(0,0) = point.elementsByTagName("x").at(0).toElement().text().toFloat();
+                m_KpB_Org.at<float>(1,0) = point.elementsByTagName("y").at(0).toElement().text().toFloat();
             }
         }
+        cout << "KpB_Org" << m_RpB_Org << endl;
     }
-    cout << "RpB_Org" << m_RpB_Org << endl;
+    
 }
-
 
 
 void Kommunikation::FahreAnPositionUndWirfAus(Vec2i Bp){
@@ -81,38 +100,55 @@ void Kommunikation::FahreAnPositionUndWirfAus(Vec2i Bp){
     Mat Bp_mat = Mat(2,1,CV_32F);
     Bp_mat.at<float>(0,0) = Bp[0];
     Bp_mat.at<float>(0,1) = Bp[1];
-    Mat Kp_mat = m_R_B_R * Bp_mat + m_RpB_Org;
+    Mat Kp_mat = m_K_B_R * Bp_mat + m_KpB_Org;
     Vec2f Kp = Vec2f( Kp_mat.at<float>(0,0), Kp_mat.at<float>(0,1) );
 
     // Erstellen des G-Code-Strings
     string G_Code = "G1 X" + std::to_string(Kp[0]) + " Y" + std::to_string(Kp[1]);
-    cout << "GCode:" << G_Code;
-/*
-    if( m_serial.is_open() ){
+    cout << "GCode:" << G_Code << "\n";
 
-        boost::asio::write(m_serial, boost::asio::buffer(G_Code, G_Code.length()) );
-
-    }
-    */
+    // TODO: Befehl anfügen, der den Auswurfmechanismus ansteuert.
+    m_mutex.lock();
+    if( m_serial >= 0 ){
+        write (m_serial, G_Code.c_str(), G_Code.length());
+    }else{
+        cout << "Konnte Sollposition nicht an CNC-Steuerung uebermitteln, m_serial nicht (mehr) geoeffnet" << endl;
+    }    
+    m_mutex.unlock();
 }
 
 void Kommunikation::run(){
     m_running = true;
-    //boost::asio::streambuf b;
     uint gelesene_Bytes = 0;
-    /*
+    char buffer [100];
+    int n;
+    int rv;
+    struct timeval tv;
+    fd_set set;
+    
     while(m_running){
-        if( m_serial.is_open() ){
-            boost::asio::read_until(serialport, b, "DONE\n"); // anpassen an Ausgabe vom Atmega // async_read_until
-            cout << b << endl;
-            emit BefehlBearbeitet;
+        if( m_serial >= 0 ){
+            tv.tv_sec = 0;
+            tv.tv_usec = 10 * 1000;
+            FD_ZERO(&set); /* clear the set */
+
+            m_mutex.lock();
+            FD_SET(m_serial, &set); /* add our file descriptor to the set */
+            rv = select(m_serial + 1, &set, NULL, NULL, &tv);
+            if( rv > 0 )
+                n = read (m_serial, buffer, sizeof(buffer) );
+            m_mutex.unlock();   
+            
+            cout << "Gelesene Bytes: " << n << endl;
+            cout << "Gelesen:" << b << endl;
+
+            // TODO: nach dem richtigen Identifier suchen
+            emit BefehlBearbeitet();
         }else{
             usleep(1000);
         }
     }
-    ///cout << "read " << byte_count << " bytes" << endl;
-    //memcpy( buffer, boost::asio::buffer_cast<const void*>(b.data()), b.size() );
-    */
+    emit finished();
 }
 
 void Kommunikation::stop(){

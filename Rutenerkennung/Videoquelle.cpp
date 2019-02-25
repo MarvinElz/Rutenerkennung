@@ -1,11 +1,11 @@
 #include "Videoquelle.h"
 
-
+/*
 void * Videoquelle::static_fct( void*  p){
     static_cast<Videoquelle*>(p)->ReadImage();
     pthread_exit(NULL);
 }
-
+*/
 
 void Videoquelle::HoleNeuesBild(void){
     cout << "Emit neues Bild" << endl;
@@ -22,10 +22,13 @@ void Videoquelle::ReadImage(  ) {
         }
         ticks = clock();
         */
-        usleep(1000);
+        //usleep(1000);
+        if( !cap.isOpened() )
+            break;
         cap >> frame;
         cout << "Bild gelesen" << endl;
     }
+    emit finished();
 }
 
 
@@ -39,7 +42,7 @@ Videoquelle::Videoquelle(QDomDocument *xml_doc)
     }
 
     // TODO: Thread starten, der Bilder einließt
-    int rc = pthread_create(&thread, NULL, &Videoquelle::static_fct, this); //, void);
+    //int rc = pthread_create(&thread, NULL, &Videoquelle::static_fct, this); //, void);
 }
 
 

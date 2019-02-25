@@ -9,6 +9,9 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <fcntl.h>
+#include <termios.h>
+
 //#include <boost/asio.hpp>
 //#include <boost/asio/serial_port.hpp>
 
@@ -22,34 +25,34 @@ class Kommunikation : public QObject{
 
 
     public:
-        Kommunikation( QDomDocument *xml_doc );
-        void run();
+        Kommunikation( QDomDocument *xml_doc );        
         void stop();
 
     signals:
-        void BefehlBearbeitet();
+        void BefehlBearbeitet();        
+        void finished();
 
     public slots:
+        void run();
         void FahreAnPositionUndWirfAus(Vec2i p);
 
     private:
+        QMutex m_mutex;
+
         // Rotationsmatrix von B nach R
         // Enthält den Maßstab
-        Mat m_R_B_R = Mat::zeros(2, 2, CV_32F);
+        Mat m_K_B_R = Mat::zeros(2, 2, CV_32F);
 
         // Translationsvektor von Ursprung (Org = Origin) K-System nach B-System dargestellt im
         // K-System
-        Mat m_RpB_Org = Mat::zeros(2,1,CV_32F);
+        Mat m_KpB_Org = Mat::zeros(2,1,CV_32F);
 
-        bool m_running = true;
+        bool m_running = false;
 
         uint m_baudrate = 115200;
         string m_serialport = "/dev/ttyACM0";
 
-        //boost::asio::io_service io;
-        //boost::asio::serial_port m_serial(io);
-
-
+        int m_serial;
 };
 
 #endif

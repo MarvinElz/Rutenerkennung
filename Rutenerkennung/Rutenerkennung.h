@@ -5,6 +5,8 @@
 #include <QtXml/QtXml>
 #include <time.h>
 
+#include <iostream>
+
 #include <unistd.h>   // usleep
 #include <vector>
 #include <opencv2/opencv.hpp>
@@ -25,6 +27,12 @@ signals:
     void ErkannteStecklinge( vector<Vec2i> points );
 
  private:
+ 	float m_Min = 8.0;	// mm
+ 	float m_Max = 60.0;	// mm
+ 	int m_Threashold_SW = 80;	// Schwarz-Weis-Schwellwert
+
+ 	float m_masstab = 0.1;	// mm/px
+
     clock_t ticks;
     vector<Vec2i> m_pos;
 };

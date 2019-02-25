@@ -32,8 +32,7 @@ int main(int argc, char *argv[])
     if( !file->open(QIODevice::ReadOnly | QIODevice::Text) ){
         qDebug() << "Datei konnte nicht geoeffnet werden";
     }else{
-        xml_doc.setContent(file);
-        // TODO: SBD_config füllen mit Daten aus .xml Datei.
+        xml_doc.setContent(file);        
     }
 
     Videoquelle *v = new Videoquelle( &xml_doc );
@@ -44,13 +43,29 @@ int main(int argc, char *argv[])
 
     Kommunikation *k = new Kommunikation(&xml_doc);
 
-    QObject::connect( b, SIGNAL(FahreAnPositionUndWirfAus(Vec2i)), k, SLOT(FahreAnPositionUndWirfAus(Vec2i) ));
-    QObject::connect( k, SIGNAL(BefehlBearbeitet(void)), b, SLOT(BefehlBearbeitet(void) ));
-    QObject::connect( v, SIGNAL(NeuesBild( Mat* )), r, SLOT(NeuesBild( Mat* )) );
-    QObject::connect( r, SIGNAL(HoleNeuesBild()), v, SLOT(HoleNeuesBild()));
-    // ErkannteStecklinge
+    QThread* v_thread = new QThread;
+    QThread* k_thread = new QThread;
+    v->moveToThread(v_thread);
+    k->moveToThread(k_thread);
 
-    QMetaObject::invokeMethod( v, "HoleNeuesBild", Qt::QueuedConnection );
+    // Kommunikation in Thread auslagern
+    QObject::connect(k_thread, SIGNAL( started() ), k, SLOT(run()) );
+    QObject::connect(k, SIGNAL (finished()), k_thread, SLOT (quit()));   
+
+    // Videoquelle in Thread auslagern
+    QObject::connect(v_thread, SIGNAL (started()), v, SLOT (ReadImage()));
+    QObject::connect(v, SIGNAL (finished()), v_thread, SLOT (quit()));
+
+    QObject::connect( b, SIGNAL(FahreAnPositionUndWirfAus(Vec2i)),  k, SLOT(FahreAnPositionUndWirfAus(Vec2i) ));
+    QObject::connect( k, SIGNAL(BefehlBearbeitet()),                b, SLOT(BefehlBearbeitet() ));
+    QObject::connect( v, SIGNAL(NeuesBild( Mat* )),                 r, SLOT(NeuesBild( Mat* )) );
+    QObject::connect( r, SIGNAL(HoleNeuesBild()),                   v, SLOT(HoleNeuesBild()));
+    QObject::connect( r, SIGNAL(ErkannteStecklinge( vector<Vec2i>)),b, SLOT(ErkannteStecklinge( vector<Vec2i>) ));
+
+    v_thread->start();
+    k_thread->start();
+    QMetaObject::invokeMethod( v, "HoleNeuesBild"   , Qt::QueuedConnection );
+    QMetaObject::invokeMethod( b, "BefehlBearbeitet", Qt::QueuedConnection );
 
     QApplication a(argc, argv);
     MainWindow w( &SBD_config, &xml_doc );
