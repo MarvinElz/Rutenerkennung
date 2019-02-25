@@ -83,7 +83,7 @@ void Beobachter::BefehlBearbeitet(){
     float best_distance = 1000000;
 
     if( m_stecklinge.empty() ){
-        cout << "Keine Stecklinge gefunden:" << __FUNCTION__ << "m_stecklinge.empty()" << endl;
+        cout << "Keine Stecklinge gefunden: " << __FUNCTION__ << " m_stecklinge.empty()" << endl;
         goto emit_same_signal;
     }
 
@@ -104,13 +104,13 @@ void Beobachter::BefehlBearbeitet(){
     }
 
     m_pos_Aktuator = best->pos;
-    emit FahreAnPositionUndWirfAus( m_pos_Aktuator );
+    emit FahreAnPositionUndWirfAus( &m_pos_Aktuator );
     return;
 
 emit_same_signal:
     // was passiert, wenn CNC-Befehl bearbeitet wurde, aber kein Steckling valide ist?
     // kurz warten und BefehlBearbeitet erneut aufrufen
-    usleep(1000);
+    usleep(100000);
     QMetaObject::invokeMethod( this, "BefehlBearbeitet", Qt::QueuedConnection );
     return;
 }

@@ -9,6 +9,7 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
 
@@ -34,7 +35,7 @@ class Kommunikation : public QObject{
 
     public slots:
         void run();
-        void FahreAnPositionUndWirfAus(Vec2i p);
+        void FahreAnPositionUndWirfAus(Vec2i *p);
 
     private:
         QMutex m_mutex;

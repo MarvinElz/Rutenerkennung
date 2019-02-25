@@ -29,7 +29,7 @@
 
 	<Kommunikation>
 		<Baudrate>115200</Baudrate>
-		<Serial>"/dev/ttyAMA0"</Serial>
+                <Serial>/dev/ttyACM0</Serial>
 	</Kommunikation>
 
 	<Stecklinge>
@@ -48,7 +48,7 @@
 			else
 				Quelle ist Bild oder Video -> cap(str)
                  Kamera -->
-		<Quelle>"0"</Quelle>
+                <Quelle>0</Quelle>
 		<!-- Bild 
 		<Quelle>"/home/pi/Desktop/Rute.JPG"</Quelle>  -->
 		<!-- Video 

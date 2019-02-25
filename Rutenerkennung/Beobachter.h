@@ -43,7 +43,7 @@ public:
         void BefehlBearbeitet();
 
     signals:
-        void FahreAnPositionUndWirfAus(Vec2i p);
+        void FahreAnPositionUndWirfAus(Vec2i *p);
 };
 
 #endif

@@ -27,7 +27,7 @@ Kommunikation::Kommunikation( QDomDocument *xml_doc ){
         }
     }
 
-    m_serial = open( m_serialport, O_RDWR| O_NOCTTY );
+    m_serial = open( m_serialport.c_str(), O_RDWR| O_NOCTTY );
     
     if( m_serial < 0 ){
         cout << m_serialport << " konnte nicht geoffnet werden." << endl;
@@ -39,7 +39,6 @@ Kommunikation::Kommunikation( QDomDocument *xml_doc ){
         switch( m_baudrate ){
             case 9600  : baudrate = B9600; break;
             case 19200 : baudrate = B19200; break;
-            case 57600 : baudrate = B57600; break;
             case 38400 : baudrate = B38400; break;
             case 57600 : baudrate = B57600; break;
             case 115200: baudrate = B115200; break;
@@ -73,7 +72,7 @@ Kommunikation::Kommunikation( QDomDocument *xml_doc ){
             }
         }
 
-        cout << "K_B_R" << m_R_B_R << endl;
+        cout << "K_B_R" << m_K_B_R << endl;
 
         // Parsen von R_B_Org in R_B_T
         nodeList = cam_element.elementsByTagName("Translation");
@@ -89,18 +88,18 @@ Kommunikation::Kommunikation( QDomDocument *xml_doc ){
                 m_KpB_Org.at<float>(1,0) = point.elementsByTagName("y").at(0).toElement().text().toFloat();
             }
         }
-        cout << "KpB_Org" << m_RpB_Org << endl;
+        cout << "KpB_Org" << m_KpB_Org << endl;
     }
     
 }
 
 
-void Kommunikation::FahreAnPositionUndWirfAus(Vec2i Bp){
+void Kommunikation::FahreAnPositionUndWirfAus(Vec2i *Bp){
     cout << "FahreAnPositionUndWirfAus" << endl;
     // Umrechnung von B-System in K-System
     Mat Bp_mat = Mat(2,1,CV_32F);
-    Bp_mat.at<float>(0,0) = Bp[0];
-    Bp_mat.at<float>(0,1) = Bp[1];
+    Bp_mat.at<float>(0,0) = (*Bp)[0];
+    Bp_mat.at<float>(0,1) = (*Bp)[1];
     Mat Kp_mat = m_K_B_R * Bp_mat + m_KpB_Org;
     Vec2f Kp = Vec2f( Kp_mat.at<float>(0,0), Kp_mat.at<float>(0,1) );
 
@@ -111,7 +110,7 @@ void Kommunikation::FahreAnPositionUndWirfAus(Vec2i Bp){
     // TODO: Befehl anfügen, der den Auswurfmechanismus ansteuert.
     m_mutex.lock();
     if( m_serial >= 0 ){
-        write (m_serial, G_Code.c_str(), G_Code.length());
+        write(m_serial, G_Code.c_str(), (ssize_t)G_Code.length());
     }else{
         cout << "Konnte Sollposition nicht an CNC-Steuerung uebermitteln, m_serial nicht (mehr) geoeffnet" << endl;
     }    
@@ -132,29 +131,30 @@ void Kommunikation::run(){
 
             // Timeout für read
             tv.tv_sec = 0;
-            tv.tv_usec = 10 * 1000;
+            tv.tv_usec = 50 * 1000;
             FD_ZERO(&set); /* clear the set */
 
             // m_serial blockieren
             m_mutex.lock();
             FD_SET(m_serial, &set); /* add our file descriptor to the set */
             rv = select(m_serial + 1, &set, NULL, NULL, &tv);
+
             if( rv > 0 )
-                n = read (m_serial, buffer, sizeof(buffer) );
-            m_mutex.unlock();   
+                n = read (m_serial, buffer, sizeof(buffer) );            
+            m_mutex.unlock();
             // m_serial wieder freigeben
             
             cout << "Gelesene Bytes: " << n << endl;
-            cout << "Gelesen:" << b << endl;
+            cout << "Gelesen:" << buffer << endl;
 
             // nach dem richtigen Identifier suchen
-            if (strcmp(buffer, "Done") == 0){ // evtl. \n anfügen?
+            if (strcmp(buffer, "Done\n") == 0){ // evtl. \n anfügen?
                 cout << "emit BefehlBearbeitet" << endl;                
                 emit BefehlBearbeitet();
             }
         }else{
             cout << "m_serial nicht (mehr) geoeffnet" << endl;
-            usleep(1000);
+            usleep(100000);
         }
     }
     emit finished();

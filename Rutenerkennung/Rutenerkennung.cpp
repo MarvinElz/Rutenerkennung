@@ -60,6 +60,7 @@ Rutenerkennung::Rutenerkennung( QDomDocument *xml_doc )
 
 void Rutenerkennung::NeuesBild(Mat *frame){
     cout << "Neues Bild erhalten" << endl;
+
     //cv::resize(frame, frame, size);
     Mat bw;
 
@@ -126,9 +127,9 @@ void Rutenerkennung::NeuesBild(Mat *frame){
     // Auswertung der Rutenpositionen hinsichtlich der Plausibilität
     // Je häufiger ein Steckling in Bildern detektiert wurde,
     // desto eher soll er ausgeworfen werden.
-    cout << "emit ErkannteStecklinge" << endl;
+    cout << "emit ErkannteStecklinge mit Size: " << m_pos.size() << endl;
     emit ErkannteStecklinge( m_pos );
     cout << "emit HoleNeuesBild" << endl;
-    usleep(3 * 1000 * 1000);
+    //usleep(3 * 1000 * 1000);
     emit HoleNeuesBild();
 }
