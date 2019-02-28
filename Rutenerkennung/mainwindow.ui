@@ -6,550 +6,74 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1187</width>
-    <height>627</height>
+    <width>778</width>
+    <height>488</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralWidget">
-   <widget class="QLabel" name="label">
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLabel" name="Image_Label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>50</y>
-      <width>101</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Min Distance</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>140</y>
-      <width>111</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Threshold Step</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>170</y>
-      <width>111</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Min Repeatab.</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>80</y>
-      <width>111</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Max Threshold</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_10">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>10</y>
-      <width>371</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>16</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Simple-Blob-Detection Parameter</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="Parameter_Updated">
-    <property name="geometry">
-     <rect>
-      <x>250</x>
-      <y>530</y>
-      <width>101</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Update</string>
-    </property>
-   </widget>
-   <widget class="QGroupBox" name="groupBox">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>220</y>
-      <width>231</width>
-      <height>131</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Area</string>
-    </property>
-    <widget class="QCheckBox" name="cB_filterByArea">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>141</width>
-       <height>26</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Filter by Area</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_5">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>60</y>
-       <width>101</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Min Area</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_6">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>90</y>
-       <width>101</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Max Area</string>
-     </property>
-    </widget>
-    <widget class="QDoubleSpinBox" name="dSB_minArea">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>50</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="maximum">
-      <double>100000.000000000000000</double>
-     </property>
-     <property name="value">
-      <double>600.000000000000000</double>
-     </property>
-    </widget>
-    <widget class="QDoubleSpinBox" name="dSB_maxArea">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>80</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="maximum">
-      <double>100000.000000000000000</double>
-     </property>
-     <property name="value">
-      <double>16000.000000000000000</double>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_2">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>370</y>
-      <width>291</width>
-      <height>111</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Circularity</string>
-    </property>
-    <widget class="QCheckBox" name="cB_filterByCircularity">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>30</y>
-       <width>191</width>
-       <height>26</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Filter by Circularity</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_12">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>60</y>
-       <width>111</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Min Circularity</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_13">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>90</y>
-       <width>111</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Max Circularity</string>
-     </property>
-    </widget>
-    <widget class="QDoubleSpinBox" name="dSB_maxCircularity">
-     <property name="geometry">
-      <rect>
-       <x>160</x>
-       <y>80</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QDoubleSpinBox" name="dSB_minCircularity">
-     <property name="geometry">
-      <rect>
-       <x>160</x>
-       <y>50</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QLabel" name="label_11">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>110</y>
-      <width>111</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Min Threshold</string>
-    </property>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_3">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>370</y>
-      <width>251</width>
-      <height>131</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Convexity</string>
-    </property>
-    <widget class="QCheckBox" name="cB_filterByConvexity">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>30</y>
-       <width>171</width>
-       <height>26</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Filter by Convexity</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_7">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>90</y>
-       <width>121</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Max Convexity</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_8">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>60</y>
-       <width>121</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Min Convexity</string>
-     </property>
-    </widget>
-    <widget class="QDoubleSpinBox" name="dSB_maxConvexity">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>80</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QDoubleSpinBox" name="dSB_minConvexity">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>50</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_4">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>220</y>
-      <width>271</width>
-      <height>131</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Inertia Ratio</string>
-    </property>
-    <widget class="QCheckBox" name="cB_filterByInertia">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>30</y>
-       <width>171</width>
-       <height>26</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Filter by Inertia</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_9">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>90</y>
-       <width>121</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Max Inertia Ratio</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_14">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>60</y>
-       <width>121</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Min Inertia Ratio</string>
-     </property>
-    </widget>
-    <widget class="QDoubleSpinBox" name="dSB_maxInertia">
-     <property name="geometry">
-      <rect>
-       <x>160</x>
-       <y>80</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="maximum">
-      <double>1.000000000000000</double>
-     </property>
-     <property name="singleStep">
-      <double>0.100000000000000</double>
-     </property>
-    </widget>
-    <widget class="QDoubleSpinBox" name="dSB_minInertia">
-     <property name="geometry">
-      <rect>
-       <x>160</x>
-       <y>50</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="maximum">
-      <double>1.000000000000000</double>
-     </property>
-     <property name="singleStep">
-      <double>0.100000000000000</double>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QDoubleSpinBox" name="dSB_minDistance">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>40</y>
-      <width>101</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <double>99999.000000000000000</double>
-    </property>
-    <property name="value">
-     <double>50.000000000000000</double>
-    </property>
-   </widget>
-   <widget class="QDoubleSpinBox" name="dSB_maxThreshold">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>70</y>
-      <width>101</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <double>100000.000000000000000</double>
-    </property>
-    <property name="value">
-     <double>120.000000000000000</double>
-    </property>
-   </widget>
-   <widget class="QDoubleSpinBox" name="dSB_minThreshold">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>100</y>
-      <width>101</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <double>10000.000000000000000</double>
-    </property>
-    <property name="value">
-     <double>30.000000000000000</double>
-    </property>
-   </widget>
-   <widget class="QDoubleSpinBox" name="dSB_thresholdStep">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>130</y>
-      <width>101</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="value">
-     <double>10.000000000000000</double>
-    </property>
-   </widget>
-   <widget class="QDoubleSpinBox" name="dSB_minRepeatability">
-    <property name="geometry">
-     <rect>
-      <x>160</x>
-      <y>160</y>
-      <width>101</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="value">
-     <double>1.000000000000000</double>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_15">
-    <property name="geometry">
-     <rect>
-      <x>570</x>
-      <y>30</y>
-      <width>601</width>
-      <height>471</height>
+      <y>20</y>
+      <width>551</width>
+      <height>421</height>
      </rect>
     </property>
     <property name="text">
      <string/>
     </property>
    </widget>
-   <widget class="QPushButton" name="Einmessung_Koordinatensystem">
+   <widget class="QComboBox" name="Bildauswahl">
     <property name="geometry">
      <rect>
-      <x>100</x>
-      <y>530</y>
-      <width>101</width>
+      <x>590</x>
+      <y>20</y>
+      <width>171</width>
       <height>31</height>
      </rect>
     </property>
-    <property name="text">
-     <string>PushButton</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>390</x>
-      <y>110</y>
-      <width>101</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>PushButton</string>
-    </property>
+    <item>
+     <property name="text">
+      <string>Schwarz-Weiß</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Binär</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Binär-Opened</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Distance</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Distance-Threshold</string>
+     </property>
+    </item>
    </widget>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>778</width>
+     <height>27</height>
+    </rect>
+   </property>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

@@ -25,20 +25,21 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
     Beobachter.cpp \
     Kommunikation.cpp \
     Steckling.cpp \
     Rutenerkennung.cpp \
-    Videoquelle.cpp
+    Videoquelle.cpp \
+    mainwindow.cpp
 
-HEADERS  += mainwindow.h \
+HEADERS  += \
     config_manager.h \
     Beobachter.h \
     Kommunikation.h \
     Steckling.h \
     Rutenerkennung.h \
-    Videoquelle.h
+    Videoquelle.h \
+    mainwindow.h
 
 FORMS    += mainwindow.ui
 

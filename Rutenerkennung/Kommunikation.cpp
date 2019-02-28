@@ -143,7 +143,7 @@ void Kommunikation::run(){
                 n = read (m_serial, buffer, sizeof(buffer) );            
             m_mutex.unlock();
             // m_serial wieder freigeben
-            
+            usleep(1000000);
             cout << "Gelesene Bytes: " << n << endl;
             cout << "Gelesen:" << buffer << endl;
 
@@ -154,7 +154,7 @@ void Kommunikation::run(){
             }
         }else{
             cout << "m_serial nicht (mehr) geoeffnet" << endl;
-            usleep(100000);
+            usleep(1000000);
         }
     }
     emit finished();

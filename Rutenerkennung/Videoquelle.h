@@ -30,6 +30,7 @@ signals:
     void NeuesBild( Mat *frame );
 
 private:
+    QMutex m_mutex;
     system_clock::time_point last_Frame_Call = system_clock::now();
     Mat frame;
     clock_t ticks;

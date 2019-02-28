@@ -50,16 +50,22 @@ int main(int argc, char *argv[])
 
     Kommunikation *k = new Kommunikation(&xml_doc);
 
-    a = new QApplication(argc, argv);
+     QApplication a(argc, argv);
 
     QThread* v_thread = new QThread;
     QThread* k_thread = new QThread;
+    QThread* r_thread = new QThread;
+
     v->moveToThread(v_thread);
     k->moveToThread(k_thread);
+    r->moveToThread(r_thread);
+
+    QObject::connect( r_thread, SIGNAL( started() ), r, SLOT(run()) );
+    QObject::connect( r, SIGNAL(finished()), r_thread, SLOT(quit()) );
 
     // Kommunikation in Thread auslagern
     QObject::connect(k_thread, SIGNAL( started() ), k, SLOT(run()) );
-    QObject::connect(k, SIGNAL (finished()), k_thread, SLOT (quit()));   
+    QObject::connect(k, SIGNAL (finished()), k_thread, SLOT (quit()));
 
     // Videoquelle in Thread auslagern
     QObject::connect(v_thread, SIGNAL (started()), v, SLOT (ReadImage()));
@@ -67,9 +73,9 @@ int main(int argc, char *argv[])
 
     // Restlichen Signale verbinden
     // Rutenerkennung löst Ausgabe des letzten Bildes aus
-    QObject::connect( r, SIGNAL(HoleNeuesBild()),                   v, SLOT(HoleNeuesBild()));
+    QObject::connect( r, SIGNAL(HoleNeuesBild()),                   v, SLOT(HoleNeuesBild()), Qt::DirectConnection);
     // Videoquelle gibt aktuelles Bild zurück
-    QObject::connect( v, SIGNAL(NeuesBild( Mat* )),                 r, SLOT(NeuesBild( Mat* )) );
+    QObject::connect( v, SIGNAL(NeuesBild( Mat* )),                 r, SLOT(NeuesBild( Mat* )), Qt::DirectConnection);
     // Rutenerkennung gibt die im letzten Bild erkannten Ruten an den Beobachter
     QObject::connect( r, SIGNAL(ErkannteStecklinge( vector<Vec2i>)),b, SLOT(ErkannteStecklinge( vector<Vec2i>) ));
     // Beobachter gibt die Position der geeignetsten Rute aus (in Bildkoordinaten)
@@ -78,28 +84,34 @@ int main(int argc, char *argv[])
     // das Signal BefehlBearbeitet aus
     QObject::connect( k, SIGNAL(BefehlBearbeitet()),                b, SLOT(BefehlBearbeitet() ));
     
+
+
     v_thread->start();
     k_thread->start();
+    r_thread->start();
 
     //std::thread t(init);
 
-    MainWindow w( &SBD_config, &xml_doc );
+    MainWindow w( r, b, &xml_doc );
 
     w.show();
 
-    usleep(1000*1000);
+    QObject::connect( r, SIGNAL(Ergebnis_BW(cv::Mat *)), &w, SLOT(ShowImage(cv::Mat *)));
 
+    //usleep(3000*1000);
+
+    // Warum bringt dieser Teil das Programm durcheinander?
     // Bearbeitung starten
-    if( !QMetaObject::invokeMethod( v, "HoleNeuesBild"   , Qt::DirectConnection ) ){        //DirectConnection
-        cout << "Invoked HoleNeuesBild fehlgeschlagen" << endl;
-        exit(0);
-    }
-    if( !QMetaObject::invokeMethod( b, "BefehlBearbeitet", Qt::QueuedConnection ) ){
-        cout << "Invoked BefehlBearbeitet fehlgeschlagen" << endl;
-        exit(0);
-    }
+    //if( !QMetaObject::invokeMethod( v, "HoleNeuesBild"   , Qt::DirectConnection ) ){        //DirectConnection
+    //    cout << "Invoked HoleNeuesBild fehlgeschlagen" << endl;
+    //    exit(0);
+    //}
+    //if( !QMetaObject::invokeMethod( b, "BefehlBearbeitet", Qt::QueuedConnection ) ){
+    //    cout << "Invoked BefehlBearbeitet fehlgeschlagen" << endl;
+    //    exit(0);
+    //}
 
-    a->exec();
+    a.exec();
 
     //std::thread t1(task1, "Hello");
 

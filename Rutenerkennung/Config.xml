@@ -24,7 +24,7 @@
 			ein Wiederereknnen akzeptiert ist, in px -->
 		<Max_Abweichung>10</Max_Abweichung> 
 		<!-- Schwellwert zur Erstellung des Binärbildes -->
-		<Threshold_SW>80</Threshold_SW>
+                <Threshold_SW>80</Threshold_SW>
 	</Erkennung>
 
 	<Kommunikation>
@@ -35,7 +35,7 @@
 	<Stecklinge>
 		<Groesse>
 			<!-- DURCHMESSER IN MM -->
-			<Min>8.0</Min>
+                        <Min>16.0</Min>
 			<Max>60.0</Max>
 		</Groesse>		
 	</Stecklinge>

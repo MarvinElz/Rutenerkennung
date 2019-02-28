@@ -54,47 +54,72 @@ Rutenerkennung::Rutenerkennung( QDomDocument *xml_doc )
             
 }
 
+void Rutenerkennung::run(){
+    cout << "Rutenerkennungsthread gestartet" << endl;
+    while(1){
+        if( m_busy ){
+            usleep(100);
+        }else{
+            m_busy = true;
+            cout << "Emit HoleNeuesBild" << endl;
+            emit HoleNeuesBild();
+        }
+    }
+}
+
 // Parameter: SchwarzWeiss-Threshold
 //              float Min = 0.3;	// Durchmesser in mm
 //              float Max = 123;
 
 void Rutenerkennung::NeuesBild(Mat *frame){
+    m_busy = true;
+
     cout << "Neues Bild erhalten" << endl;
+    //imshow( "frame", *frame );
+    if( frame->cols == 0 ){
+        m_busy = false;
+        return;
+    }
 
     //cv::resize(frame, frame, size);
-    Mat bw;
+
 
     ticks = clock();
+    m_mutex.lock();
     cvtColor(*frame, bw, CV_BGR2GRAY);
+    m_mutex.unlock();
 
-    cv::Mat binary;
     // Binäres Bild berechnen
     threshold( bw, binary, m_Threashold_SW, 255, THRESH_BINARY );
-    imshow( "binary", binary );
+    //imshow( "binary", binary );
+    emit Ergebnis_Binary( &binary );
 
     // noise removal (rechenaufwendig)
-    int dilation_size = 2;
+    int dilation_size = 3;
     Mat element = getStructuringElement( MORPH_ELLIPSE,
                                        Size( 2*dilation_size + 1, 2*dilation_size+1 ),
                                        Point( dilation_size, dilation_size ) );
     //cv::Mat kernel = Mat::ones( 2, 2, bw.type() );
-    cv::Mat binary_opened;
+
     erode( binary, binary_opened, element );
     //morphologyEx( binary, binary_opened, MORPH_OPEN, kernel );
-    imshow( "binary_opened", binary_opened );
+    //imshow( "binary_opened", binary_opened );
+    emit Ergebnis_Binary_Opened( &binary_opened );
 
-    // Finding sure foreground area
-    cv::Mat dist_transformed;// = Mat::zeros(frame.size(), CV_8U);
+    // Finding sure foreground area    
     distanceTransform(binary_opened, dist_transformed, CV_DIST_L2, 3);
-    imshow( "dist_transformed", dist_transformed );
+    //imshow( "dist_transformed", dist_transformed );
 
-    cv::Mat dist_transformat_thres;
+    dist_transformed.convertTo(dist_transformed, CV_8U);
+    emit Ergebnis_Dist( &dist_transformed );
+
     // Alles, was unterhalb von dem halben Durchmesser ist, fliegt raus
-    threshold( dist_transformed, dist_transformat_thres, static_cast<uint>(m_Min/m_masstab/2.0), 255, CV_THRESH_BINARY );
+    threshold( dist_transformed, dist_transformat_thres, static_cast<uint>(m_Min/m_masstab/2.0), 255, THRESH_BINARY );
     //threshold( dist_transformed, dist_transformat_thres, 20, 255, THRESH_BINARY );
-    imshow( "dist_transformat_thres", dist_transformat_thres );
+    //imshow( "dist_transformat_thres", dist_transformat_thres );
 
-    dist_transformat_thres.convertTo(dist_transformat_thres, CV_8U);
+    //dist_transformat_thres.convertTo(dist_transformat_thres, CV_8U);
+    emit Ergebnis_Dist_Thres( &dist_transformat_thres );
 
     // Detektion über Kontur
     vector<vector<Point> > contours;
@@ -121,15 +146,17 @@ void Rutenerkennung::NeuesBild(Mat *frame){
             m_pos.push_back(Vec2i(center.x, center.y));
         }
     }
-    imshow( "bw", bw );
+    //imshow( "bw", bw );
+    emit Ergebnis_BW( &bw );
     std::cout << "Calculated in " << (double)(clock() - ticks)/CLOCKS_PER_SEC << " seconds" << std::endl;
 
     // Auswertung der Rutenpositionen hinsichtlich der Plausibilität
     // Je häufiger ein Steckling in Bildern detektiert wurde,
     // desto eher soll er ausgeworfen werden.
     cout << "emit ErkannteStecklinge mit Size: " << m_pos.size() << endl;
-    emit ErkannteStecklinge( m_pos );
-    cout << "emit HoleNeuesBild" << endl;
+    //emit ErkannteStecklinge( m_pos );
+    //cout << "emit HoleNeuesBild" << endl;
     //usleep(3 * 1000 * 1000);
-    emit HoleNeuesBild();
+    //emit HoleNeuesBild();
+    m_busy = false;
 }

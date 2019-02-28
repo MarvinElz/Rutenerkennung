@@ -44,8 +44,9 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
         vector<Steckling*>::iterator j = m_stecklinge.begin();
         while( !m_stecklinge.empty() && j != m_stecklinge.end() ){
             if( cv::norm( *i - (*j)->pos ) < (float) m_Max_Abweichung ){
-                copy_stecklinge.push_back( *m_stecklinge.erase( j ) );
+                cout << "Wiedererkannt" << endl;
                 (*j)->m_plausibility++;
+                copy_stecklinge.push_back( *(m_stecklinge.erase( j )) );
                 i = points.erase( i );
                 break;
             }
@@ -58,16 +59,20 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
     // Diese werden nun zu copy_steckline hinzufügen
     for (vector<Vec2i>::iterator i = points.begin() ; i != points.end(); ++i){
         // neuen Steckling erzeugen und der Liste hinzufügen
+        cout << "Neuen Steckling erkannt" << endl;
         copy_stecklinge.push_back( new Steckling( *i ) );
     }
 
     // In m_stecklinge sind nun die Stecklinge gespeichert, die im aktuellen Bild nicht erkannt wurden
     // Alle löschen
     for (vector<Steckling*>::iterator j = m_stecklinge.begin() ; j != m_stecklinge.end(); ++j){
-        delete *j;
+        cout << "Nicht wiedererkannte Stecklinge loeschen" << endl;
+        //if ( *j != NULL )
+        //    delete *j;
     }
 
     // m_stecklinge wieder beschreiben
+    cout << "Kopiere m_stecklinge" << endl;
     m_stecklinge = copy_stecklinge;
 }
 
