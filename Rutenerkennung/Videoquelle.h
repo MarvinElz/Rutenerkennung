@@ -28,6 +28,7 @@ public slots:
 signals:
     void finished( void );
     void NeuesBild( Mat *frame );
+    void New_Raw_Image( cv::Mat *frame );
 
 private:
     QMutex m_mutex;

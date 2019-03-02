@@ -81,7 +81,6 @@ void Rutenerkennung::NeuesBild(Mat *frame){
         return;
     }
 
-    //cv::resize(frame, frame, size);
 
 
     ticks = clock();
@@ -89,13 +88,17 @@ void Rutenerkennung::NeuesBild(Mat *frame){
     cvtColor(*frame, bw, CV_BGR2GRAY);
     m_mutex.unlock();
 
+    cv::resize(bw, bw, Size( bw.cols * 0.7, bw.rows * 0.7 ) );
+
+    emit Ergebnis_BW( &bw );
+
     // Binäres Bild berechnen
     threshold( bw, binary, m_Threashold_SW, 255, THRESH_BINARY );
     //imshow( "binary", binary );
     emit Ergebnis_Binary( &binary );
 
     // noise removal (rechenaufwendig)
-    int dilation_size = 3;
+    int dilation_size = 5;
     Mat element = getStructuringElement( MORPH_ELLIPSE,
                                        Size( 2*dilation_size + 1, 2*dilation_size+1 ),
                                        Point( dilation_size, dilation_size ) );
@@ -125,7 +128,8 @@ void Rutenerkennung::NeuesBild(Mat *frame){
     vector<vector<Point> > contours;
     findContours(dist_transformat_thres, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
-      // Mittelpunkt der Kontur (Position der Rute) bestimmen
+    bw_with_pos = bw.clone();
+    // Mittelpunkt der Kontur (Position der Rute) bestimmen
     m_pos.clear();
     for ( int c = 0; c < contours.size(); c++ ){
         Point center = Point(0,0);
@@ -142,19 +146,19 @@ void Rutenerkennung::NeuesBild(Mat *frame){
         // vorherigen Schritte kleiner sind als in Realität
         double area = contourArea( contour );
         if ( area/M_PI < (m_Max/m_masstab/2)*(m_Max/m_masstab/2) ){
-            circle(bw, center, 5, CV_RGB(255,0,0), -1);
+            circle(bw_with_pos, center, 5, CV_RGB(255,0,0), -1);
             m_pos.push_back(Vec2i(center.x, center.y));
         }
     }
+    emit Ergebnis( &bw_with_pos );
     //imshow( "bw", bw );
-    emit Ergebnis_BW( &bw );
     std::cout << "Calculated in " << (double)(clock() - ticks)/CLOCKS_PER_SEC << " seconds" << std::endl;
 
     // Auswertung der Rutenpositionen hinsichtlich der Plausibilität
     // Je häufiger ein Steckling in Bildern detektiert wurde,
     // desto eher soll er ausgeworfen werden.
     cout << "emit ErkannteStecklinge mit Size: " << m_pos.size() << endl;
-    //emit ErkannteStecklinge( m_pos );
+    emit ErkannteStecklinge( m_pos );
     //cout << "emit HoleNeuesBild" << endl;
     //usleep(3 * 1000 * 1000);
     //emit HoleNeuesBild();

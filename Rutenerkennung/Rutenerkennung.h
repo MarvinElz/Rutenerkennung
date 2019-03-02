@@ -32,6 +32,7 @@ signals:
     void Ergebnis_Binary_Opened(cv::Mat *);
     void Ergebnis_Dist(cv::Mat *);
     void Ergebnis_Dist_Thres(cv::Mat *);
+    void Ergebnis( cv::Mat * );
 
  private:
     cv::Mat bw;
@@ -39,6 +40,7 @@ signals:
     cv::Mat binary_opened;
     cv::Mat dist_transformed;
     cv::Mat dist_transformat_thres;
+    cv::Mat bw_with_pos;
 
  	float m_Min = 8.0;	// mm
  	float m_Max = 60.0;	// mm

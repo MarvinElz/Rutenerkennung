@@ -18,11 +18,11 @@
 
 #include <thread>
 
-#include "config_manager.h"
+//#include "config_manager.h"
 
 // QStringList options;
 
-struct SBD_Config SBD_config = {false, false, false, false ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0};
+//struct SBD_Config SBD_config = {false, false, false, false ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0};
 
 QDomDocument xml_doc;
 
@@ -55,10 +55,12 @@ int main(int argc, char *argv[])
     QThread* v_thread = new QThread;
     QThread* k_thread = new QThread;
     QThread* r_thread = new QThread;
+    QThread* b_thread = new QThread;
 
     v->moveToThread(v_thread);
     k->moveToThread(k_thread);
     r->moveToThread(r_thread);
+    b->moveToThread(b_thread);
 
     QObject::connect( r_thread, SIGNAL( started() ), r, SLOT(run()) );
     QObject::connect( r, SIGNAL(finished()), r_thread, SLOT(quit()) );
@@ -77,26 +79,26 @@ int main(int argc, char *argv[])
     // Videoquelle gibt aktuelles Bild zurück
     QObject::connect( v, SIGNAL(NeuesBild( Mat* )),                 r, SLOT(NeuesBild( Mat* )), Qt::DirectConnection);
     // Rutenerkennung gibt die im letzten Bild erkannten Ruten an den Beobachter
-    QObject::connect( r, SIGNAL(ErkannteStecklinge( vector<Vec2i>)),b, SLOT(ErkannteStecklinge( vector<Vec2i>) ));
+    QObject::connect( r, SIGNAL(ErkannteStecklinge( vector<Vec2i>)),b, SLOT(ErkannteStecklinge( vector<Vec2i>) ), Qt::DirectConnection);
     // Beobachter gibt die Position der geeignetsten Rute aus (in Bildkoordinaten)
-    QObject::connect( b, SIGNAL(FahreAnPositionUndWirfAus(Vec2i*)),  k, SLOT(FahreAnPositionUndWirfAus(Vec2i*) ));
+    QObject::connect( b, SIGNAL(FahreAnPositionUndWirfAus(Vec2i*)),  k, SLOT(FahreAnPositionUndWirfAus(Vec2i*) ), Qt::DirectConnection);
     // Kommunikation versendet den G-Code-Befehl und wartet, bis dieser abgearbeitet wurde und löst im Anschluss daran
     // das Signal BefehlBearbeitet aus
     QObject::connect( k, SIGNAL(BefehlBearbeitet()),                b, SLOT(BefehlBearbeitet() ));
-    
-
 
     v_thread->start();
     k_thread->start();
     r_thread->start();
+    b_thread->start();
 
     //std::thread t(init);
 
-    MainWindow w( r, b, &xml_doc );
+    MainWindow w( v, r, b, &xml_doc );
 
     w.show();
 
     QObject::connect( r, SIGNAL(Ergebnis_BW(cv::Mat *)), &w, SLOT(ShowImage(cv::Mat *)));
+    QObject::connect( b, SIGNAL(Valide_Stecklinge( vector<Steckling*>* )), &w, SLOT(Valide_Stecklinge( vector<Steckling*>* )));
 
     //usleep(3000*1000);
 

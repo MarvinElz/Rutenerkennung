@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     Steckling.cpp \
     Rutenerkennung.cpp \
     Videoquelle.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    Koordinatensystem.cpp
 
 HEADERS  += \
     config_manager.h \
@@ -39,9 +40,11 @@ HEADERS  += \
     Steckling.h \
     Rutenerkennung.h \
     Videoquelle.h \
-    mainwindow.h
+    mainwindow.h \
+    Koordinatensystem.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    koordinatensystem.ui
 
 LIBS     += -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lpthread
 

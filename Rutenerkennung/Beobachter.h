@@ -8,6 +8,7 @@
 #include <QMetaObject>
 
 #include <unistd.h>   // usleep
+#include <memory>
 
 #include <opencv2/opencv.hpp>
 
@@ -36,7 +37,7 @@ public:
 
         Vec2i m_pos_Aktuator = Vec2i(0, 0);
 
-
+        QMutex mutex;
 
     public slots:
         void ErkannteStecklinge( vector<Vec2i> points );
@@ -44,6 +45,7 @@ public:
 
     signals:
         void FahreAnPositionUndWirfAus(Vec2i *p);
+        void Valide_Stecklinge( vector<Steckling*>* );
 };
 
 #endif

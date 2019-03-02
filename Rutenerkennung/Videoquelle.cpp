@@ -16,22 +16,11 @@ void Videoquelle::HoleNeuesBild(void){
 
 void Videoquelle::ReadImage(  ) {
     while(1){
-        //usleep(200000);
         if( !cap.isOpened() )
             break;
-        //m_mutex.lock();
         cap >> frame;
-        //m_mutex.unlock();
-        cout << "Bild gelesen" << endl;
-        //duration<double> diff = system_clock::now()-last_Frame_Call;
-        //cout << diff.count() << endl;
-        //if( diff.count() > 0.3){
-        //    cout << "3 Sekunden kein Bild angefragt" << endl;
-        //    last_Frame_Call = system_clock::now();
-        //    emit NeuesBild( &frame );
-            //QMetaObject::invokeMethod( this, "HoleNeuesBild" , Qt::QueuedConnection );    // QueuedConnection
-        //}
-        //emit NeuesBild( &frame );
+        //cout << "Bild gelesen" << endl;
+        emit New_Raw_Image( &frame );
     }
     emit finished();
 }
@@ -65,6 +54,11 @@ Videoquelle::Videoquelle(QDomDocument *xml_doc)
         std::cout << "VideoCapture konnte nicht geoeffnet werden." << std::endl;
         exit(0);
     }
+
+    cap.set( CV_CAP_PROP_FRAME_WIDTH, 640 );
+    cap.set( CV_CAP_PROP_FRAME_HEIGHT, 480 );
+
+    cap.set( CV_CAP_PROP_FPS, 30 );
 }
 
 

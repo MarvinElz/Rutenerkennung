@@ -31,7 +31,7 @@ Beobachter::Beobachter( QDomDocument *xml_doc ){
 
 void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
     cout << "ErkannteStecklinge" << endl;
-
+    mutex.lock();
     // Vergleich der erhaltenen Koordinaten der erkannten Stecklinge
     // mit den in m_stecklinge gespeichertern
 
@@ -43,37 +43,51 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
     while( !points.empty() && i != points.end() ){
         vector<Steckling*>::iterator j = m_stecklinge.begin();
         while( !m_stecklinge.empty() && j != m_stecklinge.end() ){
+            assert( *j != NULL );
             if( cv::norm( *i - (*j)->pos ) < (float) m_Max_Abweichung ){
-                cout << "Wiedererkannt" << endl;
+                //cout << "Wiedererkannt" << endl;
                 (*j)->m_plausibility++;
                 copy_stecklinge.push_back( *(m_stecklinge.erase( j )) );
                 i = points.erase( i );
-                break;
+                //copy vector of shared_ptr
+                j++;
+                goto end;
             }
             j++;
         }
         i++;
+  end:
+        ;
     }
 
     // In points sind nun die Positionen erhalten, die zum ersten mal detektiert wurden.
     // Diese werden nun zu copy_steckline hinzufügen
-    for (vector<Vec2i>::iterator i = points.begin() ; i != points.end(); ++i){
-        // neuen Steckling erzeugen und der Liste hinzufügen
-        cout << "Neuen Steckling erkannt" << endl;
-        copy_stecklinge.push_back( new Steckling( *i ) );
+    if( !points.empty() ){
+        for (vector<Vec2i>::iterator i = points.begin() ; i != points.end(); ++i){
+            // neuen Steckling erzeugen und der Liste hinzufügen
+            //cout << "Neuen Steckling erkannt" << endl;
+            copy_stecklinge.push_back( new Steckling( *i ) );
+        }
     }
-
+    mutex.unlock();
     // In m_stecklinge sind nun die Stecklinge gespeichert, die im aktuellen Bild nicht erkannt wurden
     // Alle löschen
-    for (vector<Steckling*>::iterator j = m_stecklinge.begin() ; j != m_stecklinge.end(); ++j){
-        cout << "Nicht wiedererkannte Stecklinge loeschen" << endl;
-        //if ( *j != NULL )
-        //    delete *j;
-    }
+    //for (vector<Steckling*>::iterator j = m_stecklinge.begin() ; j != m_stecklinge.end(); ++j){
+    //    cout << "Nicht wiedererkannte Stecklinge loeschen" << endl;
+    //    if ( *j != NULL ){
+            //delete *j;        // WARUM GEHT DAS NICHT?
+    //        *j = NULL;
+    //    }else{
+    //        cout << "UUPS" << endl;
+    //    }
+    //}
 
     // m_stecklinge wieder beschreiben
-    cout << "Kopiere m_stecklinge" << endl;
+
     m_stecklinge = copy_stecklinge;
+    //cout << "Kopiere m_stecklinge" << endl;
+    //cout << "Valide Stecklinge: " << m_stecklinge.size() << endl;
+    emit Valide_Stecklinge( &m_stecklinge );
 }
 
 // Wird aufgerufen, wenn der Kommunikator (Kommunikation.cpp) die Nachricht von der CNC-Steuerung erhält,

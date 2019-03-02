@@ -22,9 +22,9 @@
 		<Min_Wiedererkennungen>10</Min_Wiedererkennungen>
 		<!-- Maximale Abweichung der Position des Stecklins, in der
 			ein Wiederereknnen akzeptiert ist, in px -->
-		<Max_Abweichung>10</Max_Abweichung> 
+                <Max_Abweichung>20</Max_Abweichung>
 		<!-- Schwellwert zur Erstellung des Binärbildes -->
-                <Threshold_SW>80</Threshold_SW>
+                <Threshold_SW>30</Threshold_SW>
 	</Erkennung>
 
 	<Kommunikation>
@@ -35,8 +35,8 @@
 	<Stecklinge>
 		<Groesse>
 			<!-- DURCHMESSER IN MM -->
-                        <Min>16.0</Min>
-			<Max>60.0</Max>
+                        <Min>6.0</Min>
+                        <Max>30.0</Max>
 		</Groesse>		
 	</Stecklinge>
 

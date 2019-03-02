@@ -10,7 +10,7 @@ class Steckling
 public:
     Steckling(Vec2i);
     Vec2i pos;
-    float m_plausibility;
+    uint m_plausibility;
 };
 
 #endif // STECKLING_H
