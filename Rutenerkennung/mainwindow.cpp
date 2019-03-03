@@ -37,8 +37,11 @@ void MainWindow::Valide_Stecklinge( vector<Steckling*>* valide_stecklinge ){
     Stecklinge = *valide_stecklinge;
 }
 
-void MainWindow::ShowImage( cv::Mat *img_ ){
+void MainWindow::ShowImage( const cv::Mat *img_ ){
+    mutex.lock();
     Mat img = img_->clone();
+    mutex.unlock();
+
     if( m_format == QImage::Format_RGB888 )
         cv::cvtColor( img, img, CV_BGR2RGB );
     if( m_format == QImage::Format_Grayscale8 )
@@ -52,6 +55,7 @@ void MainWindow::ShowImage( cv::Mat *img_ ){
             putText( img, std::to_string((*j)->m_plausibility), p + Point(radius+2, radius+2), FONT_HERSHEY_SIMPLEX, 1, CV_RGB(255, 0, 0) );
         }
     }
+    cv::resize(img, img, Size( ui->Image_Label->width(), ui->Image_Label->height() ) );
     ui->Image_Label->setPixmap( QPixmap::fromImage( QImage( img.data, img.cols, img.rows, img.step, QImage::Format_RGB888) ) );
     ui->Image_Label->show();
 }
@@ -63,36 +67,44 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_Bildauswahl_activated(int index)
 {
-    QObject::disconnect(m_r, 0, this, SLOT(ShowImage(cv::Mat *)));
-    QObject::disconnect(m_b, 0, this, SLOT(ShowImage(cv::Mat *)));
-    QObject::disconnect(m_v, 0, this, SLOT(ShowImage(cv::Mat *)));
+    QObject::disconnect(m_r, 0, this, SLOT(ShowImage(const cv::Mat *)));
+    QObject::disconnect(m_b, 0, this, SLOT(ShowImage(const cv::Mat *)));
+    QObject::disconnect(m_v, 0, this, SLOT(ShowImage(const cv::Mat *)));
     switch( index ){
         //case raw:
         //    QObject::connect( m_v, SIGNAL(New_Raw_Image(cv::Mat *)), this, SLOT(ShowImage(cv::Mat *)), Qt::QueuedConnection);
         //    m_format = QImage::Format_RGB888;
         //    break;
-        case bw:
-            QObject::connect( m_r, SIGNAL(Ergebnis_BW(cv::Mat *)), this, SLOT(ShowImage(cv::Mat *)), Qt::QueuedConnection);
+        case Images::bw:
+            QObject::connect( m_r, SIGNAL( Ergebnis_BW(const cv::Mat *)), this, SLOT(ShowImage(const cv::Mat *)), Qt::QueuedConnection);
             m_format = QImage::Format_Grayscale8;
             break;
-        case binary:
-            QObject::connect( m_r, SIGNAL(Ergebnis_Binary(cv::Mat *)), this, SLOT(ShowImage(cv::Mat *)), Qt::QueuedConnection);
+        case Images::mask:
+            QObject::connect( m_r, SIGNAL( Ergebnis_Mask( const cv::Mat * )), this, SLOT(ShowImage(const cv::Mat *)), Qt::QueuedConnection);
             m_format = QImage::Format_Grayscale8;
             break;
-        case binary_opened:
-            QObject::connect( m_r, SIGNAL(Ergebnis_Binary_Opened(cv::Mat *)), this, SLOT(ShowImage(cv::Mat *)), Qt::QueuedConnection);
+        case Images::masked:
+            QObject::connect( m_r, SIGNAL( Ergebnis_Masked( const cv::Mat * )), this, SLOT(ShowImage(const cv::Mat *)), Qt::QueuedConnection);
             m_format = QImage::Format_Grayscale8;
             break;
-        case distance_:
-            QObject::connect( m_r, SIGNAL(Ergebnis_Dist(cv::Mat *)), this, SLOT(ShowImage(cv::Mat *)), Qt::QueuedConnection);
+        case Images::binary:
+            QObject::connect( m_r, SIGNAL( Ergebnis_Binary(const cv::Mat *)), this, SLOT(ShowImage(const cv::Mat *)), Qt::QueuedConnection);
             m_format = QImage::Format_Grayscale8;
             break;
-        case distance_threshold:
-            QObject::connect( m_r, SIGNAL(Ergebnis_Dist_Thres(cv::Mat *)), this, SLOT(ShowImage(cv::Mat *)), Qt::QueuedConnection);
+        case Images::binary_opened:
+            QObject::connect( m_r, SIGNAL( Ergebnis_Binary_Opened(const cv::Mat *)), this, SLOT(ShowImage(const cv::Mat *)), Qt::QueuedConnection);
             m_format = QImage::Format_Grayscale8;
             break;
-        case bw_with_pos:
-            QObject::connect( m_r, SIGNAL(Ergebnis(cv::Mat *)), this, SLOT(ShowImage(cv::Mat *)), Qt::QueuedConnection);
+        case Images::distance:
+            QObject::connect( m_r, SIGNAL( Ergebnis_Dist(const cv::Mat *)), this, SLOT(ShowImage(const cv::Mat *)), Qt::QueuedConnection);
+            m_format = QImage::Format_Grayscale8;
+            break;
+        case Images::distance_threshold:
+            QObject::connect( m_r, SIGNAL(Ergebnis_Dist_Thres(const cv::Mat *)), this, SLOT(ShowImage(const cv::Mat *)), Qt::QueuedConnection);
+            m_format = QImage::Format_Grayscale8;
+            break;
+        case Images::bw_with_pos:
+            QObject::connect( m_r, SIGNAL(Ergebnis(const cv::Mat *)), this, SLOT(ShowImage(const cv::Mat *)), Qt::QueuedConnection);
             m_format = QImage::Format_Grayscale8;
             break;
         default:
@@ -136,9 +148,11 @@ static void onMouseKoord( int event, int x, int y, int flag, void *param ){
     }
 }
 
-void MainWindow::GetImageForCoordinateSystem( cv::Mat *img_ ){
+void MainWindow::GetImageForCoordinateSystem( const cv::Mat *img_ ){
     Mat img;
+    mutex.lock();
     cvtColor( *img_, img, cv::COLOR_GRAY2BGR );
+    mutex.unlock();
     if( !B_Points.empty() ){
         for( uint i = 0; i < B_Points.size(); i++ ){
             Point p = B_Points.at(i);
@@ -148,9 +162,9 @@ void MainWindow::GetImageForCoordinateSystem( cv::Mat *img_ ){
         }
     }
     imshow("Einmessung Koordinatensystem", img );
-    if( cv::waitKey(30) >= 0 ){
+    if( cv::waitKey(1) >= 0 ){
         //assert(false);
-        QObject::disconnect(m_r, SIGNAL(Ergebnis_BW(cv::Mat *)), this, SLOT(GetImageForCoordinateSystem(cv::Mat *)));
+        QObject::disconnect(m_r, SIGNAL(Ergebnis_BW(const cv::Mat *)), this, SLOT(GetImageForCoordinateSystem(const cv::Mat *)));
         // TODO: Berechnung der Transformation
         Mat K_D;
         Mat B_D;
@@ -218,7 +232,7 @@ void MainWindow::GetImageForCoordinateSystem( cv::Mat *img_ ){
         QTextStream *stream;
         switch( ret ){
             case QMessageBox::Save:
-            // TODO: Daten in XML speichern
+            // Daten in XML speichern
                 cout << "Save" << endl;
                 docElem = m_xml_doc->documentElement(); 	// Rutenerkennung
                 nodeList = docElem.elementsByTagName("Camera");
@@ -260,21 +274,67 @@ void MainWindow::GetImageForCoordinateSystem( cv::Mat *img_ ){
         destroyWindow( "Einmessung Koordinatensystem" );
 }
 
-void MainWindow::GetImageForMask( cv::Mat *img_ ){
+void MainWindow::GetImageForMask( const cv::Mat *img_ ){
     Mat img;
+    mutex.lock();
     cvtColor( *img_, img, cv::COLOR_GRAY2BGR );
+    mutex.unlock();
     if( !M_Points.empty() ){
         const cv::Point *pts = (const cv::Point*) Mat(M_Points).data;
         int nptr = M_Points.size(); //Mat(M_Points.rows)
-
+        cout << "Einmessung Maske" << endl;
         polylines(img, &pts, &nptr, 1, true, CV_RGB(255, 0, 0) );
     }
     imshow("Einmessung Maske", img );
-    if( cv::waitKey(30) >= 0 ){
+    if( cv::waitKey(1) >= 0 ){
         //assert(false);
-        QObject::disconnect(m_r, SIGNAL(Ergebnis_BW(cv::Mat *)), this, SLOT(GetImageForMask(cv::Mat *)));
+        QObject::disconnect(m_r, SIGNAL(Ergebnis_BW(const cv::Mat *)), this, SLOT(GetImageForMask(const cv::Mat *)));
         destroyWindow( "Einmessung Maske" );
+        // Daten in XML Speichern
+        QMessageBox msgBox;
+        msgBox.setText("Erstellung Maske erfolgreich");
+        msgBox.setInformativeText("Konfiguration speichern?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel );
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
+        switch(ret){
+            case QMessageBox::Save:
+                {
+                QDomElement docElem = m_xml_doc->documentElement(); 	// Rutenerkennung
+                QDomElement e = docElem.firstChildElement("Erkennung");
+                QDomElement m_old = e.firstChildElement("Mask");
 
+                QDomElement m_new = m_xml_doc->createElement("Mask");
+                uint counter = 1;
+                for( vector<Vec2i>::iterator i = M_Points.begin() ; i != M_Points.end(); ++i ){
+                    QDomElement p = m_xml_doc->createElement( "Point" );
+                    p.setAttribute("id", QString::number(counter));
+
+                    QDomElement x = m_xml_doc->createElement( "x" );
+                    QDomText valueX = m_xml_doc->createTextNode( QString::number((*i)[0]) );
+
+                    QDomElement y = m_xml_doc->createElement( "y" );
+                    QDomText valueY = m_xml_doc->createTextNode( QString::number((*i)[1]) );
+
+                    p.appendChild(x).appendChild(valueX);
+                    p.appendChild(y).appendChild(valueY);
+                    m_new.appendChild(p);
+                    counter++;
+                }
+                e.replaceChild(m_new, m_old);
+
+                QString filename = QFileDialog::getSaveFileName( this, tr("Test"), tr("Config.xml") );
+                QFile file(filename);
+                file.open( QIODevice::WriteOnly | QIODevice::Text );
+                QTextStream stream( &file );
+                stream << m_xml_doc->toString();
+                file.close();
+                break;
+                }
+            case QMessageBox::Cancel: break;
+            default: break;
+
+        }
     }
 }
 
@@ -284,12 +344,12 @@ void MainWindow::on_Einmessen_clicked()
     B_Points.clear();
     namedWindow( "Einmessung Koordinatensystem", WINDOW_NORMAL );
     setMouseCallback( "Einmessung Koordinatensystem", onMouseKoord , &B_Points);
-    QObject::connect( m_r, SIGNAL(Ergebnis_BW(cv::Mat *)), this, SLOT(GetImageForCoordinateSystem(cv::Mat *)), Qt::QueuedConnection);
+    QObject::connect( m_r, SIGNAL(Ergebnis_BW(const cv::Mat *)), this, SLOT(GetImageForCoordinateSystem(const cv::Mat *)), Qt::QueuedConnection);
 }
 
 void MainWindow::on_Maske_clicked()
 {
     namedWindow( "Einmessung Maske", WINDOW_NORMAL );
     setMouseCallback( "Einmessung Maske", onMouseMask , &M_Points);
-    QObject::connect( m_r, SIGNAL(Ergebnis_BW(cv::Mat *)), this, SLOT(GetImageForMask(cv::Mat *)), Qt::QueuedConnection);
+    QObject::connect( m_r, SIGNAL(Ergebnis_BW(const cv::Mat *)), this, SLOT( GetImageForMask(const cv::Mat *)), Qt::QueuedConnection);
 }

@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 
     w.show();
 
-    QObject::connect( r, SIGNAL(Ergebnis_BW(cv::Mat *)), &w, SLOT(ShowImage(cv::Mat *)));
+    QObject::connect( r, SIGNAL(Ergebnis_BW(const cv::Mat *)), &w, SLOT( ShowImage(const cv::Mat *)));
     QObject::connect( b, SIGNAL(Valide_Stecklinge( vector<Steckling*>* )), &w, SLOT(Valide_Stecklinge( vector<Steckling*>* )));
 
     //usleep(3000*1000);

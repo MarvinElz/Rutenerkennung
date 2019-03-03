@@ -27,20 +27,26 @@ signals:
     void finished();
     void HoleNeuesBild();
     void ErkannteStecklinge( vector<Vec2i> points );
-    void Ergebnis_BW(cv::Mat *);
-    void Ergebnis_Binary(cv::Mat *);
-    void Ergebnis_Binary_Opened(cv::Mat *);
-    void Ergebnis_Dist(cv::Mat *);
-    void Ergebnis_Dist_Thres(cv::Mat *);
-    void Ergebnis( cv::Mat * );
+    void Ergebnis_BW( const cv::Mat *);
+    void Ergebnis_Mask( const cv::Mat * );
+    void Ergebnis_Masked( const cv::Mat * );
+    void Ergebnis_Binary( const cv::Mat *);
+    void Ergebnis_Binary_Opened( const  cv::Mat *);
+    void Ergebnis_Dist(const  cv::Mat *);
+    void Ergebnis_Dist_Thres(const  cv::Mat *);
+    void Ergebnis( const  cv::Mat * );
 
  private:
     cv::Mat bw;
+    cv::Mat mask;
+    cv::Mat bw_masked;
     cv::Mat binary;
     cv::Mat binary_opened;
     cv::Mat dist_transformed;
     cv::Mat dist_transformat_thres;
     cv::Mat bw_with_pos;
+
+    vector<Vec2i> M_Points; // Maskenkontur
 
  	float m_Min = 8.0;	// mm
  	float m_Max = 60.0;	// mm

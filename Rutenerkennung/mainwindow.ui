@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>909</width>
-    <height>578</height>
+    <height>564</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,15 +36,25 @@
    <widget class="QComboBox" name="Bildauswahl">
     <property name="geometry">
      <rect>
-      <x>690</x>
-      <y>30</y>
-      <width>171</width>
+      <x>670</x>
+      <y>20</y>
+      <width>211</width>
       <height>31</height>
      </rect>
     </property>
     <item>
      <property name="text">
       <string>Schwarz-Weiß</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Maske</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Schwar-Weiß, maskiert</string>
      </property>
     </item>
     <item>
@@ -76,9 +86,9 @@
    <widget class="QPushButton" name="Einmessen">
     <property name="geometry">
      <rect>
-      <x>690</x>
-      <y>80</y>
-      <width>171</width>
+      <x>670</x>
+      <y>70</y>
+      <width>211</width>
       <height>31</height>
      </rect>
     </property>
@@ -89,14 +99,14 @@
    <widget class="QPushButton" name="Maske">
     <property name="geometry">
      <rect>
-      <x>690</x>
-      <y>130</y>
-      <width>171</width>
+      <x>670</x>
+      <y>120</y>
+      <width>211</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Maske setzten</string>
+     <string>Maske setzen</string>
     </property>
    </widget>
   </widget>

@@ -31,7 +31,7 @@ Beobachter::Beobachter( QDomDocument *xml_doc ){
 
 void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
     cout << "ErkannteStecklinge" << endl;
-    mutex.lock();
+    //mutex.lock();
     // Vergleich der erhaltenen Koordinaten der erkannten Stecklinge
     // mit den in m_stecklinge gespeichertern
 
@@ -44,13 +44,14 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
         vector<Steckling*>::iterator j = m_stecklinge.begin();
         while( !m_stecklinge.empty() && j != m_stecklinge.end() ){
             assert( *j != NULL );
-            if( cv::norm( *i - (*j)->pos ) < (float) m_Max_Abweichung ){
-                //cout << "Wiedererkannt" << endl;
+            if( cv::norm( *i, (*j)->pos ) < (double) m_Max_Abweichung ){
+                // cout << "Wiedererkannt" << endl;
                 (*j)->m_plausibility++;
-                copy_stecklinge.push_back( *(m_stecklinge.erase( j )) );
+                copy_stecklinge.push_back( *j );
+                m_stecklinge.erase( j );
                 i = points.erase( i );
                 //copy vector of shared_ptr
-                j++;
+                //i++;    // Test
                 goto end;
             }
             j++;
@@ -69,18 +70,19 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
             copy_stecklinge.push_back( new Steckling( *i ) );
         }
     }
-    mutex.unlock();
+    //mutex.unlock();
     // In m_stecklinge sind nun die Stecklinge gespeichert, die im aktuellen Bild nicht erkannt wurden
     // Alle löschen
-    //for (vector<Steckling*>::iterator j = m_stecklinge.begin() ; j != m_stecklinge.end(); ++j){
-    //    cout << "Nicht wiedererkannte Stecklinge loeschen" << endl;
-    //    if ( *j != NULL ){
-            //delete *j;        // WARUM GEHT DAS NICHT?
-    //        *j = NULL;
-    //    }else{
-    //        cout << "UUPS" << endl;
-    //    }
-    //}
+    for (vector<Steckling*>::iterator j = m_stecklinge.begin() ; j != m_stecklinge.end(); ++j){
+        //cout << "Nicht wiedererkannte Stecklinge loeschen" << endl;
+        if ( *j != NULL ){
+            delete *j;
+            *j = NULL;
+        }else{
+            cout << "UUPS" << endl;
+        }
+
+    }
 
     // m_stecklinge wieder beschreiben
 
@@ -91,7 +93,7 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
 }
 
 // Wird aufgerufen, wenn der Kommunikator (Kommunikation.cpp) die Nachricht von der CNC-Steuerung erhält,
-// das der letzte Befehl ausgeführt wurde. Daraufhin wird der günstigste Steckling gesucht, der als nächstes
+// das der letzte Befehl ausgeführt wurde. Daraufhin wird der "günstigste" Steckling gesucht, der als nächstes
 // ausgeworfen werden soll
 void Beobachter::BefehlBearbeitet(){
     cout << "BefehlBearbeitet" << endl;

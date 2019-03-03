@@ -22,9 +22,55 @@
 		<Min_Wiedererkennungen>10</Min_Wiedererkennungen>
 		<!-- Maximale Abweichung der Position des Stecklins, in der
 			ein Wiederereknnen akzeptiert ist, in px -->
-                <Max_Abweichung>20</Max_Abweichung>
+                <Max_Abweichung>10</Max_Abweichung>
 		<!-- Schwellwert zur Erstellung des Binärbildes -->
                 <Threshold_SW>30</Threshold_SW>
+                <Mask>
+                   <Point id="1">
+                    <x>308</x>
+                    <y>67</y>
+                   </Point>
+                   <Point id="2">
+                    <x>355</x>
+                    <y>142</y>
+                   </Point>
+                   <Point id="3">
+                    <x>342</x>
+                    <y>244</y>
+                   </Point>
+                   <Point id="4">
+                    <x>294</x>
+                    <y>295</y>
+                   </Point>
+                   <Point id="5">
+                    <x>184</x>
+                    <y>294</y>
+                   </Point>
+                   <Point id="6">
+                    <x>94</x>
+                    <y>211</y>
+                   </Point>
+                   <Point id="7">
+                    <x>76</x>
+                    <y>84</y>
+                   </Point>
+                   <Point id="8">
+                    <x>93</x>
+                    <y>20</y>
+                   </Point>
+                   <Point id="9">
+                    <x>120</x>
+                    <y>3</y>
+                   </Point>
+                   <Point id="10">
+                    <x>190</x>
+                    <y>4</y>
+                   </Point>
+                   <Point id="11">
+                    <x>252</x>
+                    <y>26</y>
+                   </Point>
+                  </Mask>
 	</Erkennung>
 
 	<Kommunikation>
@@ -35,7 +81,7 @@
 	<Stecklinge>
 		<Groesse>
 			<!-- DURCHMESSER IN MM -->
-                        <Min>6.0</Min>
+                        <Min>10.0</Min>
                         <Max>30.0</Max>
 		</Groesse>		
 	</Stecklinge>

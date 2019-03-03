@@ -18,7 +18,7 @@
 using namespace cv;
 using namespace std;
 
-enum Bilder{ bw, binary, binary_opened, distance_, distance_threshold, bw_with_pos};
+enum Images{ bw, mask, masked, binary, binary_opened, distance, distance_threshold, bw_with_pos};
 
 namespace Ui {
 class MainWindow;
@@ -33,9 +33,9 @@ public:
     ~MainWindow();
 
     public slots:
-        void ShowImage( cv::Mat * );
-        void GetImageForCoordinateSystem( cv::Mat * );
-        void GetImageForMask( cv::Mat * );
+        void ShowImage( const cv::Mat * );
+        void GetImageForCoordinateSystem( const cv::Mat * );
+        void GetImageForMask( const cv::Mat * );
         void Valide_Stecklinge( vector<Steckling*>* );
 
 private slots:
@@ -46,6 +46,7 @@ private slots:
         void on_Maske_clicked();
 
 private:
+    QMutex mutex;
     vector<Vec2i> B_Points;
     vector<Vec2f> K_Points;
     vector<Steckling*> Stecklinge;
