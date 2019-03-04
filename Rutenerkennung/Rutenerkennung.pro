@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     Rutenerkennung.cpp \
     Videoquelle.cpp \
     mainwindow.cpp \
-    Koordinatensystem.cpp
+    Clickablelabel.cpp \
+    Einmessung_koordinatensystem.cpp
 
 HEADERS  += \
     config_manager.h \
@@ -41,10 +42,11 @@ HEADERS  += \
     Rutenerkennung.h \
     Videoquelle.h \
     mainwindow.h \
-    Koordinatensystem.h
+    Clickablelabel.h \
+    Einmessung_koordinatensystem.h
 
 FORMS    += mainwindow.ui \
-    koordinatensystem.ui
+    einmessung_koordinatensystem.ui
 
 LIBS     += -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lpthread
 

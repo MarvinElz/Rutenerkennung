@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "Einmessung_koordinatensystem.h"
 #include <QApplication>
 #include <iostream>
 
@@ -94,6 +95,9 @@ int main(int argc, char *argv[])
     //std::thread t(init);
 
     MainWindow w( v, r, b, &xml_doc );
+
+    Einmessung_Koordinatensystem ko;
+    ko.show();
 
     w.show();
 

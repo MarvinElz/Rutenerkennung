@@ -162,7 +162,7 @@ void MainWindow::GetImageForCoordinateSystem( const cv::Mat *img_ ){
         }
     }
     imshow("Einmessung Koordinatensystem", img );
-    if( cv::waitKey(1) >= 0 ){
+    if( cv::waitKey(30) >= 0 ){
         //assert(false);
         QObject::disconnect(m_r, SIGNAL(Ergebnis_BW(const cv::Mat *)), this, SLOT(GetImageForCoordinateSystem(const cv::Mat *)));
         // TODO: Berechnung der Transformation
@@ -286,7 +286,7 @@ void MainWindow::GetImageForMask( const cv::Mat *img_ ){
         polylines(img, &pts, &nptr, 1, true, CV_RGB(255, 0, 0) );
     }
     imshow("Einmessung Maske", img );
-    if( cv::waitKey(1) >= 0 ){
+    if( cv::waitKey(30) >= 0 ){
         //assert(false);
         QObject::disconnect(m_r, SIGNAL(Ergebnis_BW(const cv::Mat *)), this, SLOT(GetImageForMask(const cv::Mat *)));
         destroyWindow( "Einmessung Maske" );
