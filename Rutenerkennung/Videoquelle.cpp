@@ -8,7 +8,7 @@ void * Videoquelle::static_fct( void*  p){
 */
 
 void Videoquelle::HoleNeuesBild(void){
-    cout << "Emit NeuesBild" << endl;
+    //cout << "Emit NeuesBild" << endl;
     //last_Frame_Call = system_clock::now();
     emit NeuesBild( &frame );
 }

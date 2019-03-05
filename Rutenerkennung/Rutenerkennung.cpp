@@ -53,7 +53,7 @@ void Rutenerkennung::run(){
             usleep(100);
         }else{
             m_busy = true;
-            cout << "Emit HoleNeuesBild" << endl;
+            //cout << "Emit HoleNeuesBild" << endl;
             emit HoleNeuesBild();
             //usleep(3*1000*1000);
         }
@@ -68,7 +68,7 @@ void Rutenerkennung::run(){
 void Rutenerkennung::NeuesBild(Mat *frame){
     m_busy = true;
 
-    cout << "Neues Bild erhalten" << endl;
+    //cout << "Neues Bild erhalten" << endl;
     //imshow( "frame", *frame );
     if( frame->cols == 0 ){
         m_busy = false;
@@ -136,10 +136,6 @@ void Rutenerkennung::NeuesBild(Mat *frame){
     vector<vector<Point> > contours;            // CV_RETR_EXTERNAL
     findContours(dist_transformat_thres.clone(), contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
-
-
-
-    bw_with_pos = bw.clone();
     // Mittelpunkt der Kontur (Position der Rute) bestimmen
     m_pos.clear();
     for ( uint c = 0; c < contours.size(); c++ ){
@@ -157,18 +153,16 @@ void Rutenerkennung::NeuesBild(Mat *frame){
         // vorherigen Schritte kleiner sind als in Realität
         double area = contourArea( contour );
         if ( area/M_PI < (m_Max/m_masstab/2)*(m_Max/m_masstab/2) ){
-            circle(bw_with_pos, center, 5, CV_RGB(255,0,0), -1);
             m_pos.push_back(Vec2i(center.x, center.y));
         }
     }
-    emit Ergebnis( &bw_with_pos );
     //imshow( "bw", bw );
     std::cout << "Calculated in " << (double)(clock() - ticks)/CLOCKS_PER_SEC << " seconds" << std::endl;
 
     // Auswertung der Rutenpositionen hinsichtlich der Plausibilität
     // Je häufiger ein Steckling in Bildern detektiert wurde,
     // desto eher soll er ausgeworfen werden.
-    cout << "emit ErkannteStecklinge mit Size: " << m_pos.size() << endl;
+    //cout << "emit ErkannteStecklinge mit Size: " << m_pos.size() << endl;
     emit ErkannteStecklinge( m_pos );
     //cout << "emit HoleNeuesBild" << endl;
     //usleep(3 * 1000 * 1000);

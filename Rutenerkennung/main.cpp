@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "Einmessung_koordinatensystem.h"
 #include <QApplication>
 #include <iostream>
 
@@ -85,7 +84,7 @@ int main(int argc, char *argv[])
     QObject::connect( b, SIGNAL(FahreAnPositionUndWirfAus(Vec2i*)),  k, SLOT(FahreAnPositionUndWirfAus(Vec2i*) ), Qt::DirectConnection);
     // Kommunikation versendet den G-Code-Befehl und wartet, bis dieser abgearbeitet wurde und löst im Anschluss daran
     // das Signal BefehlBearbeitet aus
-    QObject::connect( k, SIGNAL(BefehlBearbeitet()),                b, SLOT(BefehlBearbeitet() ));
+    QObject::connect( k, SIGNAL(BefehlBearbeitet()),                b, SLOT(BefehlBearbeitet() ),  Qt::DirectConnection);
 
     v_thread->start();
     k_thread->start();
@@ -94,11 +93,7 @@ int main(int argc, char *argv[])
 
     //std::thread t(init);
 
-    MainWindow w( v, r, b, &xml_doc );
-
-    Einmessung_Koordinatensystem ko;
-    ko.show();
-
+    MainWindow w( k, v, r, b, &xml_doc );
     w.show();
 
     QObject::connect( r, SIGNAL(Ergebnis_BW(const cv::Mat *)), &w, SLOT( ShowImage(const cv::Mat *)));

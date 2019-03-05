@@ -13,6 +13,8 @@
 #include <fcntl.h>
 #include <termios.h>
 
+#include <algorithm>
+
 //#include <boost/asio.hpp>
 //#include <boost/asio/serial_port.hpp>
 
@@ -28,6 +30,8 @@ class Kommunikation : public QObject{
     public:
         Kommunikation( QDomDocument *xml_doc );        
         void stop();
+        Vec2i K_to_B(const Vec2f &);
+        Vec2f B_to_K(const Vec2i &);
 
     signals:
         void BefehlBearbeitet();        
@@ -43,10 +47,12 @@ class Kommunikation : public QObject{
         // Rotationsmatrix von B nach R
         // Enthält den Maßstab
         Mat m_K_B_R = Mat::zeros(2, 2, CV_32F);
+        Mat m_B_K_R;
 
         // Translationsvektor von Ursprung (Org = Origin) K-System nach B-System dargestellt im
         // K-System
         Mat m_KpB_Org = Mat::zeros(2,1,CV_32F);
+        Mat m_BpK_Org;
 
         bool m_running = false;
 

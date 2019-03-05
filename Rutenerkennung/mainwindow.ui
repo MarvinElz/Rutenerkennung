@@ -49,11 +49,6 @@
     </item>
     <item>
      <property name="text">
-      <string>Maske</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
       <string>Schwar-Weiß, maskiert</string>
      </property>
     </item>
@@ -75,11 +70,6 @@
     <item>
      <property name="text">
       <string>Distance-Threshold</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Schwarz-Weiß mit Stecklingen</string>
      </property>
     </item>
    </widget>
@@ -107,6 +97,45 @@
     </property>
     <property name="text">
      <string>Maske setzen</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="Save_Configuration">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>170</y>
+      <width>211</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Konfiguration speichern</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="Show_Grid">
+    <property name="geometry">
+     <rect>
+      <x>680</x>
+      <y>220</y>
+      <width>141</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Zeige Raster</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="Show_Plausibility">
+    <property name="geometry">
+     <rect>
+      <x>680</x>
+      <y>260</y>
+      <width>191</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Zeige Plausibilität</string>
     </property>
    </widget>
   </widget>

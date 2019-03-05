@@ -44,7 +44,6 @@ signals:
     cv::Mat binary_opened;
     cv::Mat dist_transformed;
     cv::Mat dist_transformat_thres;
-    cv::Mat bw_with_pos;
 
     vector<Vec2i> M_Points; // Maskenkontur
 

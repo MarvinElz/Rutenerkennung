@@ -30,7 +30,7 @@ Beobachter::Beobachter( QDomDocument *xml_doc ){
 }
 
 void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
-    cout << "ErkannteStecklinge" << endl;
+    //cout << "ErkannteStecklinge" << endl;
     //mutex.lock();
     // Vergleich der erhaltenen Koordinaten der erkannten Stecklinge
     // mit den in m_stecklinge gespeichertern
@@ -39,6 +39,7 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
     vector<Vec2i>::iterator    i = points.begin();
     //vector<Stecking>::iterator j = m_stecklinge.begin();
 
+    mutex.lock();
     // Achtung: Iterator über vector, während Elemente gelöscht werden
     while( !points.empty() && i != points.end() ){
         vector<Steckling*>::iterator j = m_stecklinge.begin();
@@ -60,7 +61,6 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
   end:
         ;
     }
-
     // In points sind nun die Positionen erhalten, die zum ersten mal detektiert wurden.
     // Diese werden nun zu copy_steckline hinzufügen
     if( !points.empty() ){
@@ -79,7 +79,7 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
             delete *j;
             *j = NULL;
         }else{
-            cout << "UUPS" << endl;
+            assert(false);
         }
 
     }
@@ -87,6 +87,7 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
     // m_stecklinge wieder beschreiben
 
     m_stecklinge = copy_stecklinge;
+    mutex.unlock();
     //cout << "Kopiere m_stecklinge" << endl;
     //cout << "Valide Stecklinge: " << m_stecklinge.size() << endl;
     emit Valide_Stecklinge( &m_stecklinge );
@@ -96,16 +97,18 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
 // das der letzte Befehl ausgeführt wurde. Daraufhin wird der "günstigste" Steckling gesucht, der als nächstes
 // ausgeworfen werden soll
 void Beobachter::BefehlBearbeitet(){
-    cout << "BefehlBearbeitet" << endl;
+    //cout << "BefehlBearbeitet" << endl;
     // m_stecklinge nach dem optimalen Steckling durchsuchen, der die Anforderungen erfüllt und
     // die geringste Distanz zum Aktuator hat
 
-    Steckling *best = NULL;
+    //Steckling *best = NULL;
+    vector<Steckling*>::iterator best;
+    //best = NULL;
     float best_distance = 1000000;
-
+    mutex.lock();
     if( m_stecklinge.empty() ){
-        cout << "Keine Stecklinge gefunden: " << __FUNCTION__ << " m_stecklinge.empty()" << endl;
-        goto emit_same_signal;
+        //cout << "Keine Stecklinge gefunden: " << __FUNCTION__ << " m_stecklinge.empty()" << endl;
+        goto release_mutex;
     }
 
     for (vector<Steckling*>::iterator j = m_stecklinge.begin() ; j != m_stecklinge.end(); ++j){
@@ -114,25 +117,30 @@ void Beobachter::BefehlBearbeitet(){
         float temp;
         if( (temp = norm( m_pos_Aktuator - (*j)->pos )) < best_distance ){
             best_distance = temp;
-            best = *j;
+            best = j;  //best = *j;
         }
     }
 
     // Keiner der Stecklinge erfüllt die Anforderung
-    if( best == NULL ){
-        cout << "Kein Steckling erfuellt die Anforderung" << endl;
-        goto emit_same_signal;
+    if( best_distance == 1000000 ){
+        //cout << "Kein Steckling erfuellt die Anforderung" << endl;
+        goto release_mutex;
     }
 
-    m_pos_Aktuator = best->pos;
+    m_pos_Aktuator = (*best)->pos;
+    cout << "Wirf aus: (" << m_pos_Aktuator[0] << ", " << m_pos_Aktuator[1] << ")" << endl;
     emit FahreAnPositionUndWirfAus( &m_pos_Aktuator );
-    return;
 
-emit_same_signal:
+    delete *best;
+    m_stecklinge.erase(best);
+
+
+release_mutex:
     // was passiert, wenn CNC-Befehl bearbeitet wurde, aber kein Steckling valide ist?
     // kurz warten und BefehlBearbeitet erneut aufrufen
-    usleep(100000);
-    QMetaObject::invokeMethod( this, "BefehlBearbeitet", Qt::QueuedConnection );
+    //usleep(100000);
+    mutex.unlock();
+    //QMetaObject::invokeMethod( this, "BefehlBearbeitet", Qt::QueuedConnection );
     return;
 }
 

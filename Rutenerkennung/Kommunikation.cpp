@@ -72,7 +72,12 @@ Kommunikation::Kommunikation( QDomDocument *xml_doc ){
             }
         }
 
-        cout << "K_B_R" << m_K_B_R << endl;
+        cout << "K_B_R" << endl;
+        cout << m_K_B_R << endl;
+
+        m_B_K_R  = m_K_B_R.inv();
+        cout << "m_B_K_B" << endl;
+        cout << m_B_K_R << endl;
 
         // Parsen von R_B_Org in R_B_T
         nodeList = cam_element.elementsByTagName("Translation");
@@ -88,14 +93,34 @@ Kommunikation::Kommunikation( QDomDocument *xml_doc ){
                 m_KpB_Org.at<float>(1,0) = point.elementsByTagName("y").at(0).toElement().text().toFloat();
             }
         }
-        cout << "KpB_Org" << m_KpB_Org << endl;
+        cout << "KpB_Org" << endl;
+        cout << m_KpB_Org << endl;
+
+        m_BpK_Org = m_B_K_R * (- m_KpB_Org);
+        cout << "BpK_Org" << endl;
+        cout << m_BpK_Org << endl;
     }
     
 }
 
+Vec2i Kommunikation::K_to_B(const Vec2f &Kp){
+    Mat Kp_mat = Mat(2,1,CV_32F);
+    Kp_mat.at<float>(0,0) = Kp[0];
+    Kp_mat.at<float>(0,1) = Kp[1];
+    Mat Bp_mat = m_B_K_R * Kp_mat + m_BpK_Org;
+    return Vec2i( Bp_mat.at<float>(0,0), Bp_mat.at<float>(0,1) );
+}
+
+Vec2f Kommunikation::B_to_K(const Vec2i &Bp){
+    Mat Bp_mat = Mat(2,1,CV_32F);
+    Bp_mat.at<float>(0,0) = Bp[0];
+    Bp_mat.at<float>(0,1) = Bp[1];
+    Mat Kp_mat = m_K_B_R * Bp_mat + m_KpB_Org;
+    return Vec2f( Kp_mat.at<float>(0,0), Kp_mat.at<float>(0,1) );
+}
 
 void Kommunikation::FahreAnPositionUndWirfAus(Vec2i *Bp){
-    cout << "FahreAnPositionUndWirfAus" << endl;
+    //cout << "FahreAnPositionUndWirfAus" << endl;
     // Umrechnung von B-System in K-System
     Mat Bp_mat = Mat(2,1,CV_32F);
     Bp_mat.at<float>(0,0) = (*Bp)[0];
@@ -105,12 +130,13 @@ void Kommunikation::FahreAnPositionUndWirfAus(Vec2i *Bp){
 
     // Erstellen des G-Code-Strings
     string G_Code = "G1 X" + std::to_string(Kp[0]) + " Y" + std::to_string(Kp[1]);
+    std::replace( G_Code.begin(), G_Code.end(), ',', '.' );
     cout << "GCode:" << G_Code << "\n";
 
     // TODO: Befehl anfügen, der den Auswurfmechanismus ansteuert.
     m_mutex.lock();
     if( m_serial >= 0 ){
-        write(m_serial, G_Code.c_str(), (ssize_t)G_Code.length());
+        write(m_serial, G_Code.c_str(), (size_t)G_Code.length());
     }else{
         cout << "Konnte Sollposition nicht an CNC-Steuerung uebermitteln, m_serial nicht (mehr) geoeffnet" << endl;
     }    
@@ -119,7 +145,7 @@ void Kommunikation::FahreAnPositionUndWirfAus(Vec2i *Bp){
 
 void Kommunikation::run(){
     m_running = true;
-    uint gelesene_Bytes = 0;
+    //uint gelesene_Bytes = 0;
     char buffer [100];
     int n;
     int rv;
@@ -139,19 +165,23 @@ void Kommunikation::run(){
             FD_SET(m_serial, &set); /* add our file descriptor to the set */
             rv = select(m_serial + 1, &set, NULL, NULL, &tv);
 
+            n = 0;
             if( rv > 0 )
-                n = read (m_serial, buffer, sizeof(buffer) );            
+                n = read (m_serial, buffer, sizeof(buffer) );
+
             m_mutex.unlock();
+            if( n == 0 ) continue;
             // m_serial wieder freigeben
-            usleep(1000000);
-            cout << "Gelesene Bytes: " << n << endl;
-            cout << "Gelesen:" << buffer << endl;
+            //usleep(1000000);
+            //cout << "Gelesene Bytes: " << n << endl;
+            //cout << "Gelesen:" << buffer << endl;
 
             // nach dem richtigen Identifier suchen
             if (strcmp(buffer, "Done\n") == 0){ // evtl. \n anfügen?
-                cout << "emit BefehlBearbeitet" << endl;                
+                //cout << "emit BefehlBearbeitet" << endl;
                 emit BefehlBearbeitet();
             }
+            memset(buffer, 0, n);
         }else{
             cout << "m_serial nicht (mehr) geoeffnet" << endl;
             usleep(1000000);

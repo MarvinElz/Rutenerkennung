@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     Videoquelle.cpp \
     mainwindow.cpp \
     Clickablelabel.cpp \
-    Einmessung_koordinatensystem.cpp
+    Einmessung_koordinatensystem.cpp \
+    Einmessung_maske.cpp
 
 HEADERS  += \
     config_manager.h \
@@ -43,10 +44,12 @@ HEADERS  += \
     Videoquelle.h \
     mainwindow.h \
     Clickablelabel.h \
-    Einmessung_koordinatensystem.h
+    Einmessung_koordinatensystem.h \
+    Einmessung_maske.h
 
 FORMS    += mainwindow.ui \
-    einmessung_koordinatensystem.ui
+    einmessung_koordinatensystem.ui \
+    einmessung_maske.ui
 
 LIBS     += -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lpthread
 

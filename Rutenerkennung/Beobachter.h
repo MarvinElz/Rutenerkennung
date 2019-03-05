@@ -29,11 +29,11 @@ public:
 
         // Anzahl der aufeinanderfolgenden Bilder, in der der Steckling
         // erkannt werden muss
-        int m_Min_Wiederkennungen = 10;
+        uint m_Min_Wiederkennungen = 10;
 
         // Zulässige Abweichung der Position eines Stecklings,
         // da die Positionserkennung leichtes Rauschen ausweisen wird
-        int m_Max_Abweichung = 10;
+        uint m_Max_Abweichung = 10;
 
         Vec2i m_pos_Aktuator = Vec2i(0, 0);
 

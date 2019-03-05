@@ -19,56 +19,44 @@
 	<Erkennung>
 		<!-- Minimale Anzahl der notwendigen Detektion eines Stecklings
 			bis Position als plausibel angenommen werden kann -->
-		<Min_Wiedererkennungen>10</Min_Wiedererkennungen>
+                <Min_Wiedererkennungen>50</Min_Wiedererkennungen>
 		<!-- Maximale Abweichung der Position des Stecklins, in der
 			ein Wiederereknnen akzeptiert ist, in px -->
                 <Max_Abweichung>10</Max_Abweichung>
 		<!-- Schwellwert zur Erstellung des Binärbildes -->
-                <Threshold_SW>30</Threshold_SW>
+                <Threshold_SW>60</Threshold_SW>
                 <Mask>
                    <Point id="1">
-                    <x>308</x>
-                    <y>67</y>
+                    <x>119</x>
+                    <y>59</y>
                    </Point>
                    <Point id="2">
-                    <x>355</x>
-                    <y>142</y>
+                    <x>223</x>
+                    <y>22</y>
                    </Point>
                    <Point id="3">
-                    <x>342</x>
-                    <y>244</y>
+                    <x>296</x>
+                    <y>65</y>
                    </Point>
                    <Point id="4">
-                    <x>294</x>
-                    <y>295</y>
+                    <x>349</x>
+                    <y>115</y>
                    </Point>
                    <Point id="5">
-                    <x>184</x>
-                    <y>294</y>
+                    <x>359</x>
+                    <y>209</y>
                    </Point>
                    <Point id="6">
-                    <x>94</x>
-                    <y>211</y>
+                    <x>341</x>
+                    <y>272</y>
                    </Point>
                    <Point id="7">
-                    <x>76</x>
-                    <y>84</y>
+                    <x>161</x>
+                    <y>300</y>
                    </Point>
                    <Point id="8">
-                    <x>93</x>
-                    <y>20</y>
-                   </Point>
-                   <Point id="9">
-                    <x>120</x>
-                    <y>3</y>
-                   </Point>
-                   <Point id="10">
-                    <x>190</x>
-                    <y>4</y>
-                   </Point>
-                   <Point id="11">
-                    <x>252</x>
-                    <y>26</y>
+                    <x>105</x>
+                    <y>231</y>
                    </Point>
                   </Mask>
 	</Erkennung>
@@ -81,7 +69,7 @@
 	<Stecklinge>
 		<Groesse>
 			<!-- DURCHMESSER IN MM -->
-                        <Min>10.0</Min>
+                        <Min>6.0</Min>
                         <Max>30.0</Max>
 		</Groesse>		
 	</Stecklinge>
@@ -106,40 +94,35 @@
 		<!-- Punkte zur Einmessung der Koordinatensysteme -->
 		<Calibration>
 			<Point id="1">
-				<x>20</x>
-				<y>20</y>
+                                <x>0</x>
+                                <y>0</y>
 			</Point>
 			<Point id="2">
-				<x>270</x>
-				<y>20</y>
+                                <x>80</x>
+                                <y>0</y>
 			</Point>
 			<Point id="3">
-				<x>270</x>
-				<y>180</y>
+                                <x>80</x>
+                                <y>50</y>
 			</Point>
 			<Point id="4">
-				<x>20</x>
-				<y>180</y>
-			</Point>
-			<Point id="5">
-				<x>130</x>
-				<y>90</y>
-			</Point>
+                                <x>0</x>
+                                <y>50</y>
+                        </Point>
 		</Calibration>
 
-		<Rotation>
-			<r id="11">-0.51302803</r>
-			<r id="12">0.021497726</r>
-			<r id="21">-0.015044034</r>
-			<r id="22">-0.53004223</r>
-		</Rotation>	
-	
-		<Translation>
-			<Point>
-				<x>298.63617</x>
-				<y>232.82028</y>
-			</Point>
-		</Translation>	
+<Rotation>
+   <r id="11">0.301917</r>
+   <r id="12">0.0375354</r>
+   <r id="21">0.0315804</r>
+   <r id="22">-0.299966</r>
+  </Rotation>
+  <Translation>
+   <Point>
+    <x>-44.5693</x>
+    <y>65.9164</y>
+   </Point>
+  </Translation>
 	</Camera>
 
 </Rutenerkennung>

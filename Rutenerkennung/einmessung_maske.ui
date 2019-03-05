@@ -1,26 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Einmessung_Koordinatensystem</class>
- <widget class="QWidget" name="Einmessung_Koordinatensystem">
-  <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
-  </property>
-  <property name="enabled">
-   <bool>true</bool>
-  </property>
+ <class>Einmessung_Maske</class>
+ <widget class="QWidget" name="Einmessung_Maske">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>277</width>
-    <height>211</height>
+    <width>400</width>
+    <height>300</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -28,17 +16,8 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="ClickableLabel" name="Image_Label">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
      <property name="cursor">
       <cursorShape>CrossCursor</cursorShape>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Box</enum>
      </property>
      <property name="text">
       <string>TextLabel</string>
@@ -46,7 +25,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="Berechne_Koord">
+    <widget class="QPushButton" name="Erstelle_Maske">
      <property name="text">
       <string>Fertig</string>
      </property>
