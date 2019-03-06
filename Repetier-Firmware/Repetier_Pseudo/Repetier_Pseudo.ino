@@ -4,27 +4,28 @@
 // "Done\n" ausgegeben
 
 String inputString = "";
-bool stringComplete = false;
+bool stringComplete = true;
 
 void setup()
 {
   Serial.begin(115200);    
-  inputString.reserve(200);
+  //inputString.reserve(200);
 }
 
 void loop()
 {
-  if (stringComplete) {
+  //if (stringComplete) {
     // clear the string:
-    inputString = "";
-    stringComplete = false;
-    Serial.print("Working\n");
-    delay(2000);
+    //inputString = "";
+    //stringComplete = false;
+    //Serial.print("Working\n");
+    delay(300);
     Serial.print("Done\n");
-  }
-  delay(1);
+  //}
+  //delay(1);
 }
 
+/*
 void serialEvent() {
   while (Serial.available()) {
     // get the new byte:
@@ -38,3 +39,4 @@ void serialEvent() {
     }
   }
 }
+*/
