@@ -15,12 +15,18 @@
 
 #include <algorithm>
 
-//#include <boost/asio.hpp>
-//#include <boost/asio/serial_port.hpp>
+// zum Installieren sudo apt-get install wiringpi
+// oder googlen für Anleitung
+#include <wiringPi.h> // zum Einlesen des Pinzustandes für Triggersignal
+#include "Zustandsautomat.h"
 
 //using namespace boost;
 using namespace std;
 using namespace cv;
+
+// http://raspberrypiguide.de/howtos/raspberry-pi-gpio-how-to/
+// andere Pins durchaus denkbar
+#define TRIGGER_PIN 8
 
 class Kommunikation : public QObject{
 

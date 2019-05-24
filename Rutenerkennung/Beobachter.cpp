@@ -48,6 +48,7 @@ void Beobachter::ErkannteStecklinge( vector<Vec2i> points ){
             if( cv::norm( *i, (*j)->pos ) < (double) m_Max_Abweichung ){
                 // cout << "Wiedererkannt" << endl;
                 (*j)->m_plausibility++;
+                (*j)->pos = points(i)
                 copy_stecklinge.push_back( *j );
                 m_stecklinge.erase( j );
                 i = points.erase( i );

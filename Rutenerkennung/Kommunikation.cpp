@@ -1,5 +1,25 @@
 #include "Kommunikation.h"
 
+// Fahre an ermittelte Position und wirf "besten" Steckling aus
+// Zustandsdaten können optional Informationen enthalten, müssen jedoch beim
+// erstellen des Zustands mit übergeben werden.
+void WirfAus( void *Zustandsdaten ){
+    cout << "Ausführen von: " << __FUNCTION__ << endl;
+    // ...
+}
+
+//  Definieren von Funktionen, die Zustandsverhalten beschreiben
+void WarteAufTrigger(void *Zustandsdaten){
+    cout << "Ausführen von: " << __FUNCTION__ << endl;
+    // nichts tun....
+}
+
+// Definieren von Funktionen, die Bedingungen zum Schalten der Transition beschreiben
+bool TriggerSignalAusgelöst(void *Zustandsdaten){
+    // Trigger wurde ausgelöst, wenn TRIGGER_PIN auf Ground/0V gezogen wurde.
+    return !digitalRead(TRIGGER_PIN); 
+}
+
 Kommunikation::Kommunikation( QDomDocument *xml_doc ){
 
     // Einlesen von Membervariablen
@@ -100,6 +120,13 @@ Kommunikation::Kommunikation( QDomDocument *xml_doc ){
         cout << "BpK_Org" << endl;
         cout << m_BpK_Org << endl;
     }
+
+    // WiringPi initialieren
+    wiringPiSetup();
+
+    pinMode(TRIGGER_PIN, INPUT);
+    pullUpDnControl (TRIGGER_PIN, PUD_UP) ;
+    // Pin auf Eingang, Pullup
     
 }
 
@@ -119,9 +146,15 @@ Vec2f Kommunikation::B_to_K(const Vec2i &Bp){
     return Vec2f( Kp_mat.at<float>(0,0), Kp_mat.at<float>(0,1) );
 }
 
+Vec2i *Bp_BesterSteckling;
+
 void Kommunikation::FahreAnPositionUndWirfAus(Vec2i *Bp){
     //cout << "FahreAnPositionUndWirfAus" << endl;
     // Umrechnung von B-System in K-System
+Bp_BesterSteckling = Bp;
+neuerSteckling = true;
+/*
+
     Mat Bp_mat = Mat(2,1,CV_32F);
     Bp_mat.at<float>(0,0) = (*Bp)[0];
     Bp_mat.at<float>(0,1) = (*Bp)[1];
@@ -141,9 +174,30 @@ void Kommunikation::FahreAnPositionUndWirfAus(Vec2i *Bp){
         cout << "Konnte Sollposition nicht an CNC-Steuerung uebermitteln, m_serial nicht (mehr) geoeffnet" << endl;
     }    
     m_mutex.unlock();
+    */
 }
 
 void Kommunikation::run(){
+
+    // Erstellen des Zustandsautomaten
+    // Erklärung:
+    // Parameter:   On_Enter, 
+    //              On_Stay, 
+    //              On_Exit, 
+    //              On_Enter beim ersten Ausführen des Zustandes ausführen?, 
+    //              Zeiger auf optionale Zustandsdaten
+    Zustand S1 = {NULL, WarteAufTrigger, NULL , true };
+    Zustand S2 = {NULL, WirfAus        , NULL , true };
+    //Zustand S3 = {NULL, TuteIrgendWasAnderes, NULL, true, &optinaleZustandsdaten};
+
+    const Transition transitions[] = {
+      { &S1, &TriggerSignalAusgelöst, &S2 }//,
+      //{ &S2, &bedingung_uart_erfolgreich, &S3 }     
+    };
+
+    // Anfangszustand  
+    Zustand *aktueller_Zustand = &S1;
+
     m_running = true;
     //uint gelesene_Bytes = 0;
     char buffer [100];
@@ -152,8 +206,11 @@ void Kommunikation::run(){
     struct timeval tv;
     fd_set set;
     m_running = true;
-    while(m_running){
+    while(m_running){        
         if( m_serial >= 0 ){
+
+            // hier Zustandsautomat regelmäßig ausführen
+            aktueller_Zustand = run_Automat( aktueller_Zustand, transitions, sizeof(transitions)/sizeof(Transition) );
 
             // Timeout für read
             tv.tv_sec = 0;
@@ -175,6 +232,8 @@ void Kommunikation::run(){
             //usleep(1000000);
             //cout << "Gelesene Bytes: " << n << endl;
             //cout << "Gelesen:" << buffer << endl;
+
+
 
             // nach dem richtigen Identifier suchen
             if (strcmp(buffer, "Done\n") == 0){ // evtl. \n anfügen?

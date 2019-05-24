@@ -51,7 +51,7 @@ FORMS    += mainwindow.ui \
     einmessung_koordinatensystem.ui \
     einmessung_maske.ui
 
-LIBS     += -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lpthread
+LIBS     += -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_features2d -lpthread -lwiringPi 
 
 DISTFILES += \
     Config.xml
