@@ -50,6 +50,19 @@ class Kommunikation : public QObject{
     private:
         QMutex m_mutex;
 
+        // hier dann Zustände definieren:
+        // Zustand S1 = {verhalten_Init_CAN , NULL                         , verhalten_Init_CAN_DONE  };
+        // ...
+
+        // Zeiger auf aktuellen Zustand definieren
+        //Zustand *aktueller_Zustand = &S1;
+
+        // Transitionen definieren
+        // const Transition transitions[] = {
+        //    { &S1, &bedingung_can_erfolgreich, &S2 },
+        //    { &S2, &bedingung_uart_erfolgreich, &S3 }     
+        // };
+
         // Rotationsmatrix von B nach R
         // Enthält den Maßstab
         Mat m_K_B_R = Mat::zeros(2, 2, CV_32F);

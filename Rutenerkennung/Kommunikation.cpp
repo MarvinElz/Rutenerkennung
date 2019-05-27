@@ -5,8 +5,12 @@
 // erstellen des Zustands mit übergeben werden.
 void WirfAus( void *Zustandsdaten ){
     cout << "Ausführen von: " << __FUNCTION__ << endl;
-    // ...
+    Kommunikation *kom = (Kommunikation*)Zustandsdaten;
+   // sende_ueber_serielle_schnittstelle muss dann in Kommunikation unter public: stehen
+   kom->sende_ueber_serielle_schnittstelle("Test");
+   // oder direkt kom->m_serial verwenden.
 }
+
 
 //  Definieren von Funktionen, die Zustandsverhalten beschreiben
 void WarteAufTrigger(void *Zustandsdaten){
@@ -177,6 +181,7 @@ neuerSteckling = true;
     */
 }
 
+
 void Kommunikation::run(){
 
     // Erstellen des Zustandsautomaten
@@ -187,7 +192,7 @@ void Kommunikation::run(){
     //              On_Enter beim ersten Ausführen des Zustandes ausführen?, 
     //              Zeiger auf optionale Zustandsdaten
     Zustand S1 = {NULL, WarteAufTrigger, NULL , true };
-    Zustand S2 = {NULL, WirfAus        , NULL , true };
+    Zustand S2 = {NULL, WirfAus        , NULL , true, this };
     //Zustand S3 = {NULL, TuteIrgendWasAnderes, NULL, true, &optinaleZustandsdaten};
 
     const Transition transitions[] = {
@@ -210,6 +215,11 @@ void Kommunikation::run(){
         if( m_serial >= 0 ){
 
             // hier Zustandsautomat regelmäßig ausführen
+            // besser wäre hier eine Entflechtung von Kommunikation und Steuerung (Zustandsautomaten)
+            // evtl. könnte man das Handling der seriellen Schnittstelle den Zuständen und Transitionen überlassen.
+            // Der Zustand, der auf das erfolgreiche Ausführen des CNC-Codes wartet, kann in seiner Transition den
+            // Zugriff auf die serielle Schnittstelle bekommen und auf "DONE" warten. Dazu müsste man den Funktionen
+            // über die Zustandsdaten den m_serial übergeben. (evtl. muss dafür m_serial public gemacht werden).
             aktueller_Zustand = run_Automat( aktueller_Zustand, transitions, sizeof(transitions)/sizeof(Transition) );
 
             // Timeout für read
